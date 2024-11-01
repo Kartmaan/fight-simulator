@@ -34,8 +34,8 @@ struct Mob {
     pos: Pos,
     speed: f32,
     hp: i32,
-    armor: i32,
-    precision: f32,
+    armor: i32, // 
+    precision: f32, // Chance of hitting the target
     damage: u32, // Base damage
     crit_proba: f32, // Critical hit probability
     crit_mult_dam: f32, // Critical multiplicative damage
@@ -50,19 +50,24 @@ fn sigmoid(x: f32) -> f32 {
     1.0 / (1.0 + E.powf(-x))
 }
 
-/// # speed_check
-/// Checks the speed value which must be between 0 and 1 
-/// (normalization)
-/// ## Explication
-/// If the value is within the range it's returned as is, 
-/// if it's greater than this range then the value is passed 
-/// through a sigmoid function, otherwise (presumably if the 
-/// value is negative) the function returns an error
-fn speed_check(speed: f32) -> Result<f32, String> {
-    if speed >= 0.0 && speed <= 1.0 {
-        Ok(speed)
-    } else if speed > 1.0 {
-        Ok(sigmoid(speed))
+/// Normalizes a value
+/// ## Details
+/// The function will attempt by several means to normalize the 
+/// value according to its order of magnitude
+/// - If the value is within the range [0,1] it's returned as is. 
+/// - If the value is within the range ]1,100] then the it's 
+/// divided by 100 
+/// - If the value is greater than 100 then it's passed through 
+/// a sigmoid function. 
+/// - Otherwise the function returns an error (we assume that 
+/// the value is negative)
+fn normalize(value: f32) -> Result<f32, String> {
+    if value >= 0.0 && value <= 1.0 {
+        Ok(value)
+    } else if value > 1.0 && value <= 100.0 {
+        Ok(value / 100.0)
+    } else if value > 100.0 {
+        Ok(sigmoid(value))
     } else {
         Err(String::from("Speed value must be between 0 and 1"))
     }
@@ -138,7 +143,7 @@ impl Mob {
         Mob {
             category: cat,
             pos: pos,
-            speed: speed_check(speed).unwrap(),
+            speed: normalize(speed).unwrap(),
             hp: 100,
             armor: 40,
             precision: 0.9,
