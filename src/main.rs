@@ -47,7 +47,7 @@ struct Mob {
 
 /// Normalize a value x between 0 and 1
 fn sigmoid(x: f32) -> f32 {
-    1.0 / (1.0 + E.powf(-x))
+    1.0 / (1.0 + (-x).exp())
 }
 
 /// Normalizes a value
@@ -220,4 +220,6 @@ fn main() {
 
     let test_dam = armor(50, 0);
     println!("{}", test_dam);
+
+    println!("Sigmoid 1278 : {}", sigmoid(1234.0));
 }
