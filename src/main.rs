@@ -1,7 +1,5 @@
 use rand::Rng;
 
-const E: f32 = 2.71828;
-
 /// Different categories of movement
 #[derive(Debug)]
 enum MoveCategory {
@@ -18,17 +16,20 @@ enum PlayerClass {
     Mage,
 }
 
+/// 2D coordinates
 #[derive(Debug)]
 struct Pos {
     x: i32,
     y: i32,
 }
 
+/// The character controlled by the player
 struct Player {
     name: String,
     pos: Pos,
 }
 
+/// The enemy to be defeated
 struct Mob {
     category: MoveCategory,
     pos: Pos,
@@ -45,55 +46,108 @@ struct Mob {
     alive: bool,
 }
 
-/// Normalize a value x between 0 and 1
-fn sigmoid(x: f32) -> f32 {
-    1.0 / (1.0 + (-x).exp())
-}
-
-/// Normalizes a value
-/// ## Details
+/// Normalizes a value to be between 0 and 1.
+/// 
+/// # Details
 /// The function will attempt by several means to normalize the 
-/// value according to its order of magnitude
+/// value according to its order of magnitude.
 /// - If the value is within the range [0,1] it's returned as is. 
 /// - If the value is within the range ]1,100] then the it's 
-/// divided by 100 
-/// - If the value is greater than 100 then it's passed through 
-/// a sigmoid function. 
+/// divided by 100.
+/// - All values ​​greater than 100 become 1.0.
 /// - Otherwise the function returns an error (we assume that 
-/// the value is negative)
+/// the value is negative).
+/// 
+/// # Arguments
+/// * `value` - The f32 value to be normalized.
+/// 
+/// # Return value
+/// * `Ok(f32)` - The normalized value if valid.
+/// * `Err(String)` - Error message if the value is invalid.
+/// 
+/// # Exemples
+/// ```
+/// assert_eq!(normalize(0.5).unwrap(), 0.5);
+/// assert_eq!(normalize(50.0).unwrap(), 0.5);
+/// assert_eq!(normalize(150.0).unwrap(), 1.0);
+/// assert!(normalize(-1.0).is_err());
+/// ```
 fn normalize(value: f32) -> Result<f32, String> {
     if value >= 0.0 && value <= 1.0 {
         Ok(value)
     } else if value > 1.0 && value <= 100.0 {
         Ok(value / 100.0)
     } else if value > 100.0 {
-        Ok(sigmoid(value))
+        Ok(1.0)
     } else {
         Err(String::from("Speed value must be between 0 and 1"))
     }
 }
 
-/// Calculates the final damage received based on the armor value.
+/// Calculates an exponential reduction of an initial value based 
+/// on a given factor.
 /// 
-/// ## Details
-/// A decreasing exponential function is used to give more value 
-/// to the first armor points, making the damage reduction much 
-/// greater at the beginning and more negligible at last armor
-/// values.
+/// # Arguments
 /// 
-/// ### Formula
-/// final_dam = init_dam * exp(-k * armor)
+/// * `init_value` - The initial value to reduce (f32).
+/// * `factor` - The decline factor that influences the intensity 
+/// of the reduction (f32).
+/// * `k` - Parameter controlling the decay rate.
 /// 
-/// k is the parameter controlling the decay rate
-fn armor(damage: i32, armor_val: i32) -> i32 {
-    let k: f32 = 0.0314; // Seems ok...
-    let final_dam: f32 = damage as f32 * (-k * armor_val as f32).exp();
-    return  final_dam as i32;
+/// # Returns
+/// 
+/// * The reduced value after applying the exponential 
+/// reduction (f32).
+/// 
+/// # Example
+/// Let's imagine a damage reduction function: `input_value` 
+/// would be the initial damage, while `factor` would be our 
+/// armor points, the higher these are, the greater the reduction 
+/// of `input_value` will be. If the damage received is 50 and 
+/// our armor is 100 with a parameter k set to 0.0217 then the 
+/// function will be called as follows: 
+/// ```
+/// let final_dam = exp_decay(50.0, 100.0, 0.0217);
+/// println!("{}", final_dam) // 5.708
+/// ```
+/// The 50 initial damage is reduced to around 5.7, the higher 
+/// the armor value the more effective this defense will be 
+/// and vice versa.
+/// 
+/// # Note
+/// *This function uses the exponential function `exp()` from the 
+/// Rust standard library whose precision is not deterministic*.
+fn exp_decay(input_value: f32, factor: f32, k: f32) -> f32 {
+    let final_dam: f32 = input_value * (-k * factor).exp();
+    return  final_dam;
 }
 
-/// The function tests a probability based on a value 
-/// between 0 and 1
-fn proba_test(proba: f32) -> Result<bool, String> {
+/// Tests a probability based on a percentage value : if the 
+/// probability is realized then the function returns `true`, 
+/// otherwise `false`.
+/// 
+/// # Arguments
+/// 
+/// * `proba` : The probability value in percent (f32)
+/// 
+/// # Returns
+/// 
+/// * `Ok(true)` : The probability has been realized
+/// * `Ok(false)` : The probability was not realized
+/// * `Err(String)` : An error has been encountered
+/// 
+/// # Example
+/// 
+/// The function acts like a dice roll. For example, if we want 
+/// an event to occur only once out of three:
+/// ```
+/// if check_proba(33.33).unwrap() {
+///     println!("OK");
+/// } else {
+///     println!("NOPE");
+/// }
+/// ```
+fn check_proba(proba: f32) -> Result<bool, String> {
     let coef: f32;
     
     // A probability of 0 could create infinite loops. 
@@ -110,8 +164,10 @@ fn proba_test(proba: f32) -> Result<bool, String> {
         return Err(String::from("Value can't be greater than 100"));
     }
 
+    // Generation of a float between 0 and 1
     let rng_num: f32 = rand::thread_rng().gen();
 
+    // Probability check
     if rng_num < coef {
         return Ok(true);
     } else {
@@ -139,6 +195,7 @@ impl Pos {
 }
 
 impl Mob {
+    /// Create a new Mob
     fn new(cat: MoveCategory, speed: f32, pos: Pos) -> Mob {
         Mob {
             category: cat,
@@ -157,10 +214,12 @@ impl Mob {
         }
     }
 
+    /// Moves a Mob to a x, y coordinates
     fn move_to(&mut self, x:i32, y:i32) {
         self.pos.move_to(x, y);
     }
 
+    /// Print some infos about the Mob
     fn info(&self) {
         println!("\nCategory : {:?}", self.category);
         println!("Speed : {}", self.speed);
@@ -170,7 +229,7 @@ impl Mob {
     }
 
 
-
+    /// The Mob recieved damage
     fn hit(&mut self, damage: i32) {
         self.hp = self.hp - damage;
 
@@ -218,8 +277,10 @@ fn main() {
     gobelin.hit(50);
     gobelin.info();
 
-    let test_dam = armor(50, 0);
-    println!("{}", test_dam);
+    let test_dam = exp_decay(50.0, 100.0, 0.0217);
+    println!("Exp dacay : {}", test_dam);
 
-    println!("Sigmoid 1278 : {}", sigmoid(1234.0));
+    if check_proba(33.33).unwrap() {
+        println!("OK")
+    }
 }
