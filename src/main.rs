@@ -35,15 +35,15 @@ struct Mob {
     pos: Pos,
     speed: f32,
     hp: i32,
-    armor: i32, // 
+    armor: i32, // Armor value [0, 100]
     precision: f32, // Chance of hitting the target
     damage: u32, // Base damage
     crit_proba: f32, // Critical hit probability
     crit_mult_dam: f32, // Critical multiplicative damage
-    dodge_proba: f32,
-    in_alert: bool,
-    is_attacking: bool,
-    alive: bool,
+    dodge_proba: f32, // Probability to dodge a hit
+    in_alert: bool, // Mob's looking for trouble
+    is_attacking: bool, // Mob's under attack
+    is_alive: bool, // Mob's still alive
 }
 
 /// Normalizes a value to be between 0 and 1.
@@ -188,9 +188,26 @@ impl Pos {
     }
 
     /// Euclidian distance between two Pos coordinates
-    fn dist(&self, other:Pos) -> f32 {
+    fn dist(&self, other:&Pos) -> f32 {
         let res = (other.x - self.x).pow(2) + (other.y - self.y).pow(2);
         (res as f32).sqrt()
+    }
+}
+
+impl Player {
+    fn new(name: String, pos:Pos) -> Player {
+        Player {
+            name: name,
+            pos: pos,
+        }
+    }
+
+    /// Euclidian distance between the player and a Mob
+    fn dist(&self, mob_pos:&Mob) -> f32 {
+        let player_pos = &self.pos;
+        let mob_position = &mob_pos.pos;
+        let distance = player_pos.dist(mob_position);
+        return distance;
     }
 }
 
@@ -210,7 +227,7 @@ impl Mob {
             dodge_proba: 0.03,
             in_alert: false,
             is_attacking: false,
-            alive: true,
+            is_alive: true,
         }
     }
 
@@ -225,7 +242,7 @@ impl Mob {
         println!("Speed : {}", self.speed);
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
         println!("HP : {}", self.hp);
-        println!("Alive : {}", self.alive);
+        println!("Alive : {}", self.is_alive);
     }
 
 
@@ -239,16 +256,18 @@ impl Mob {
         }
 
         if self.hp > 0 {
-            self.alive = true;
+            self.is_alive = true;
         } else {
-            self.alive = false;
+            self.is_alive = false;
         }
     }
 
-    /// Euclidian distance between two Mobs
-    fn dist(&self, other_mob:&Mob) -> f32 {
-        let res: i32 = (other_mob.pos.x - self.pos.x).pow(2) + (other_mob.pos.y - self.pos.y).pow(2);
-        (res as f32).sqrt()
+    /// Euclidian distance between the Mob and the player
+    fn dist(&self, player_pos:&Player) -> f32 {
+        let mob_pos = &self.pos;
+        let player_position = &player_pos.pos;
+        let distance = mob_pos.dist(player_position);
+        return distance;
     }
 }
 
@@ -261,17 +280,22 @@ fn main() {
     )};
 
     let mut gobelin: Mob = {
-    Mob::new( 
-    MoveCategory::Terrestrial, 
-    0.5,
-    Pos::new(72, 150),
-    )};
+        Mob::new( 
+        MoveCategory::Terrestrial, 
+        0.5,
+        Pos::new(72, 150),
+        )
+    };
+
+    let mut player: Player = {
+        Player::new(
+        String::from("gandalf"), 
+        Pos::new(140, 27),
+        )
+    };
 
     dragon.info();
     gobelin.info();
-
-    let distance: f32 = dragon.dist(&gobelin);
-    println!("Distance between dragon and gobelin : {}", distance);
 
     gobelin.move_to(80, 160);
     gobelin.hit(50);
@@ -283,4 +307,10 @@ fn main() {
     if check_proba(33.33).unwrap() {
         println!("OK")
     }
+
+    let mut dist = player.dist(&dragon);
+    println!("{}", dist); 
+
+    dist = dragon.dist(&player);
+    println!("{}", dist);
 }
