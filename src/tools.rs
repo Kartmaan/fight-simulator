@@ -1,3 +1,7 @@
+//! Set of tools useful for manipulation of numeric and 
+//! alphabetic values
+
+/// Mathematical tools
 pub mod math {
     use rand::Rng;
 

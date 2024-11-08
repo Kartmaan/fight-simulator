@@ -1,17 +1,85 @@
+//! Module defining the Mob structure and all its implementations
+//! as well as the BESTIARY
+
+use lazy_static::lazy_static;
+use std::collections::HashMap;
+
 use crate::spatial::Pos;
-use crate::tools::math::normalize;
+use crate::tools::math::{normalize, exp_decay};
 use crate::player::Player;
 
-#[derive(Debug)]
+/// The different types of movement that a Mob can adopt
+#[derive(Debug, Clone)]
 pub enum MoveCategory {
     Terrestrial,
     Aerian,
     Aquatic,
 }
 
+lazy_static::lazy_static! {
+    /// Bestiary containing different types of Mob
+    pub static ref BESTIARY: HashMap<&'static str, Mob> = {
+        let mut map = HashMap::new();
+
+        // DRAGON
+        map.insert("dragon", Mob {
+            category: MoveCategory::Aerian,
+            pos: Pos::default(),
+            speed: normalize(15.0).unwrap(),
+            hp: 230,
+            armor: 0,
+            precision: 0.95,
+            damage: 40,
+            crit_proba: 0.1,
+            crit_mult_dam: 2.0,
+            dodge_proba: 0.05,
+            in_alert: false,
+            is_attacking: false,
+            is_alive: true,
+        });
+
+        // GOBELIN
+        map.insert("gobelin", Mob {
+            category: MoveCategory::Terrestrial,
+            pos: Pos::default(),
+            speed: normalize(9.0).unwrap(),
+            hp: 80,
+            armor: 50,
+            precision: 0.95,
+            damage: 20,
+            crit_proba: 0.1,
+            crit_mult_dam: 2.0,
+            dodge_proba: 0.05,
+            in_alert: false,
+            is_attacking: false,
+            is_alive: true,
+        });
+
+        // SHARK
+        map.insert("shark", Mob {
+            category: MoveCategory::Aquatic,
+            pos: Pos::default(),
+            speed: normalize(9.0).unwrap(),
+            hp: 70,
+            armor: 0,
+            precision: 0.75,
+            damage: 40,
+            crit_proba: 0.1,
+            crit_mult_dam: 2.0,
+            dodge_proba: 0.05,
+            in_alert: false,
+            is_attacking: false,
+            is_alive: true,
+        });
+        map
+    };
+}
+
+/// Player's enemy
+#[derive(Debug, Clone)]
 pub struct Mob {
     category: MoveCategory,
-    pub pos: Pos,
+    pos: Pos,
     speed: f32,
     hp: i32,
     armor: i32, // Armor value [0, 100]
@@ -45,12 +113,17 @@ impl Mob {
         }
     }
 
+    /// Returns the position of the Mob
+    pub fn get_pos(&self) -> &Pos {
+        &self.pos
+    }
+
     /// Moves a Mob to a x, y coordinates
     pub fn move_to(&mut self, x:i32, y:i32) {
         self.pos.move_to(x, y);
     }
 
-    /// Print some infos about the Mob
+    /// Prints some infos about the Mob
     pub fn info(&self) {
         println!("\nCategory : {:?}", self.category);
         println!("Speed : {}", self.speed);
@@ -58,7 +131,6 @@ impl Mob {
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
     }
-
 
     /// The Mob recieved damage
     pub fn hit(&mut self, damage: i32) {
@@ -76,11 +148,30 @@ impl Mob {
         }
     }
 
-    /// Euclidian distance between the Mob and the player
+    /// Euclidian distance between a Mob and the player
     pub fn dist(&self, player_pos:&Player) -> f32 {
         let mob_pos = &self.pos;
         let player_position = &player_pos.pos;
         let distance = mob_pos.dist(player_position);
         return distance;
+    }
+
+    /// Kills a Mob in cold blood
+    pub fn kill(&mut self) {
+        self.hp = 0;
+        self.in_alert = false;
+        self.is_attacking = false;
+        self.is_alive = false;
+    }
+}
+
+/// Returns Ok(Mob) if the Mob name is available in BESTIARY
+pub fn get_mob(mob_name: &str) -> Result<Mob, String> {
+    if BESTIARY.contains_key(mob_name) {
+        let mut mob: Mob = BESTIARY.get(mob_name).cloned().unwrap();
+        Ok(mob)
+    } else {
+        let err_txt = format!("Mob '{}' not found in bestiary", mob_name);
+        Err(String::from(err_txt))
     }
 }

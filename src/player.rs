@@ -1,12 +1,18 @@
+//! Module defining the Player structure and all its 
+//! implementations
+
 use crate::spatial::Pos;
-use crate::tools::math::normalize;
+use crate::tools::math::{normalize, exp_decay};
 use crate::mobs::Mob;
 
+/// The different classes that can be chosen by the player. 
+/// They can bring penalties or bonuses to their characteristics.
 pub enum PlayerClass {
     Archer,
     Warrior,
 }
 
+/// The character controlled by the player
 pub struct Player {
     name: String,
     pub pos: Pos,
@@ -24,6 +30,7 @@ pub struct Player {
 }
 
 impl Player {
+    /// Creating a new player character
     pub fn new(name: String, pos:Pos, speed: f32) -> Player {
         Player {
             name: name,
@@ -42,10 +49,12 @@ impl Player {
         }
     }
 
+    /// Player movement
     pub fn move_to(&mut self, x:i32, y:i32) {
         self.pos.move_to(x, y);
     }
 
+    /// Prints Player's infos
     pub fn info(&self) {
         println!("\nName : {:?}", self.name);
         println!("Speed : {}", self.speed);
@@ -54,6 +63,7 @@ impl Player {
         println!("Alive : {}", self.is_alive);
     }
 
+    /// Receiving damage
     pub fn hit(&mut self, damage: i32) {
         self.hp = self.hp - damage;
 
@@ -69,9 +79,10 @@ impl Player {
         }
     }
 
+    /// Euclidian distance between a Player and a Mob
     pub fn dist(&self, mob_pos:&Mob) -> f32 {
         let player_pos = &self.pos;
-        let mob_pos = &mob_pos.pos;
+        let mob_pos = &mob_pos.get_pos();
         let distance = player_pos.dist(mob_pos);
         return distance;
     }
