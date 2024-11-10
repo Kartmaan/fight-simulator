@@ -4,8 +4,9 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use crate::spatial::Pos;
+use crate::tools::spatial::Pos;
 use crate::tools::math::{normalize, exp_decay};
+use crate::tools::traits::Mortal;
 use crate::player::Player;
 
 /// The different types of movement that a Mob can adopt
@@ -162,6 +163,20 @@ impl Mob {
         self.in_alert = false;
         self.is_attacking = false;
         self.is_alive = false;
+    }
+}
+
+impl Mortal for Mob {
+    fn get_damage(&self) -> u32 {
+        self.damage
+    }
+
+    fn get_hp(&self) -> i32 {
+        self.hp
+    }
+
+    fn set_hp(&mut self, new_hp: i32) {
+        self.hp = new_hp;
     }
 }
 

@@ -1,6 +1,8 @@
 //! Set of tools useful for manipulation of numeric and 
 //! alphabetic values
 
+//use crate::tools::traits::Entity;
+
 /// Mathematical tools
 pub mod math {
     use rand::Rng;
@@ -132,5 +134,68 @@ pub mod math {
         } else {
             Err(String::from("Speed value must be between 0 and 1"))
         }
+    }
+}
+
+/// Structures and methods for geometric operations in 2D space
+pub mod spatial {
+    /// 2D coordinates structure
+    #[derive(Debug, Clone)]
+    pub struct Pos {
+        pub x: i32,
+        pub y: i32,
+    }
+    
+    impl Pos {
+        /// Create a new Pos struct
+        pub fn new(x: i32, y:i32) -> Pos {
+            Pos {x:x, y:y}
+        }
+    
+        /// Initializes default coordinates
+        pub fn default() -> Pos {
+            Pos {x:0, y:0}
+        }
+    
+        /// Change the coordinates of a Pos struct
+        pub fn move_to(&mut self, x:i32, y:i32) {
+            self.x = x;
+            self.y = y;
+        }
+    
+        /// Euclidian distance between two coordinates
+        pub fn dist(&self, other:&Pos) -> f32 {
+            let res = (other.x - self.x).pow(2) + (other.y - self.y).pow(2);
+            (res as f32).sqrt()
+        }
+    }
+}
+
+/// Functions useful for game mechanics
+pub mod game_mechanics {
+    use super::traits::Mortal;
+
+    /// A carrier of the Mortal trait attacks another
+    /// 
+    /// Both “attacker” and “victim” can be of Mob or Player 
+    /// type. The value of the attacker's “damage” field is 
+    /// deduced from the value of the victim's “hp” field.
+    pub fn attack<T: Mortal, U: Mortal>(attacker: &T, victim: &mut U) {
+        let effective_damage: i32 = attacker.get_damage() as i32;
+        let new_hp: i32 = victim.get_hp() - effective_damage;
+        victim.set_hp(new_hp);
+
+        println!("ATTACK ! Remaining HP : {}", new_hp);
+    }
+}
+
+pub mod traits {
+    
+    /// Bearers of this trait can attack, take damage and 
+    /// eventually (fatally) die.
+    pub trait Mortal {
+        fn get_damage(&self) -> u32;
+        fn get_hp(&self) -> i32;
+        fn set_hp(&mut self, new_hp: i32);
     }
 }
