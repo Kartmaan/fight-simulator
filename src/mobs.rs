@@ -32,7 +32,7 @@ lazy_static::lazy_static! {
             precision: 0.95,
             damage: 40,
             crit_proba: 0.1,
-            crit_mult_dam: 2.0,
+            crit_multiplier: 2.0,
             dodge_proba: 0.05,
             in_alert: false,
             is_attacking: false,
@@ -49,7 +49,7 @@ lazy_static::lazy_static! {
             precision: 0.95,
             damage: 20,
             crit_proba: 0.1,
-            crit_mult_dam: 2.0,
+            crit_multiplier: 2.0,
             dodge_proba: 0.05,
             in_alert: false,
             is_attacking: false,
@@ -66,7 +66,7 @@ lazy_static::lazy_static! {
             precision: 0.75,
             damage: 40,
             crit_proba: 0.1,
-            crit_mult_dam: 2.0,
+            crit_multiplier: 2.0,
             dodge_proba: 0.05,
             in_alert: false,
             is_attacking: false,
@@ -87,7 +87,7 @@ pub struct Mob {
     precision: f32, // Chance of hitting the target
     damage: u32, // Base damage
     crit_proba: f32, // Critical hit probability
-    crit_mult_dam: f32, // Critical multiplicative damage
+    crit_multiplier: f32, // Critical multiplicative damage
     dodge_proba: f32, // Probability to dodge a hit
     in_alert: bool, // Mob's looking for trouble
     is_attacking: bool, // Mob's under attack
@@ -106,7 +106,7 @@ impl Mob {
             precision: 0.9,
             damage: 33,
             crit_proba: 0.05,
-            crit_mult_dam: 1.5,
+            crit_multiplier: 1.5,
             dodge_proba: 0.03,
             in_alert: false,
             is_attacking: false,
@@ -167,16 +167,42 @@ impl Mob {
 }
 
 impl Mortal for Mob {
-    fn get_damage(&self) -> u32 {
-        self.damage
-    }
-
+    // ------ GETS ------
     fn get_hp(&self) -> i32 {
         self.hp
     }
 
+    fn get_armor(&self) -> i32 {
+        self.armor
+    }
+
+    fn get_precision(&self) -> f32 {
+        self.precision
+    }
+
+    fn get_damage(&self) -> u32 {
+        self.damage
+    }
+
+    fn get_crit_proba(&self) -> f32 {
+        self.crit_proba
+    }
+
+    fn get_crit_multiplier(&self) -> f32 {
+        self.crit_multiplier
+    }
+
+    fn get_dodge_proba(&self) -> f32 {
+        self.dodge_proba
+    }
+
+    // ------ SETS ------
     fn set_hp(&mut self, new_hp: i32) {
         self.hp = new_hp;
+    }
+
+    fn set_armor(&mut self, new_armor: i32) {
+        self.armor = new_armor;
     }
 }
 

@@ -120,15 +120,41 @@ impl Player {
 }
 
 impl Mortal for Player {
-    fn get_damage(&self) -> u32 {
-        self.damage
-    }
-
+    // ------ GETS ------
     fn get_hp(&self) -> i32 {
         self.hp
     }
 
+    fn get_armor(&self) -> i32 {
+        self.armor
+    }
+
+    fn get_precision(&self) -> f32 {
+        self.precision
+    }
+
+    fn get_damage(&self) -> u32 {
+        self.damage
+    }
+
+    fn get_crit_proba(&self) -> f32 {
+        self.crit_proba
+    }
+
+    fn get_crit_multiplier(&self) -> f32 {
+        self.crit_multiplier
+    }
+
+    fn get_dodge_proba(&self) -> f32 {
+        self.dodge_proba
+    }
+
+    // ------ SETS ------
     fn set_hp(&mut self, new_hp: i32) {
         self.hp = new_hp;
+    }
+
+    fn set_armor(&mut self, new_armor: i32) {
+        self.armor = new_armor;
     }
 }

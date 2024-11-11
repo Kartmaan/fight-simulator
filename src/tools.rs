@@ -135,6 +135,32 @@ pub mod math {
             Err(String::from("Speed value must be between 0 and 1"))
         }
     }
+
+    /// Generates a random value centered around a given value
+    /// 
+    /// The range limits are plus and minus 1/8 of the 
+    /// central value.
+    /// 
+    /// **Args**
+    /// * 'central_value' : The value around which to center the 
+    /// random number
+    /// 
+    /// **Return**
+    /// An integer random number between the range
+    pub fn centred_rand(central_value: u32) -> u32 {
+        let fraction: f32 = 8.0; // Fraction of 'central_value'
+        let central = central_value as f32;
+        let mut half_range = central / fraction;
+        if half_range < 1.0 {
+            half_range = half_range.ceil();
+        }
+
+        let from = (central - half_range) as u32;
+        let to = (central + half_range) as u32;
+        let rand_val = rand::thread_rng().gen_range(from..=to);
+
+        rand_val
+    }
 }
 
 /// Structures and methods for geometric operations in 2D space
@@ -174,18 +200,33 @@ pub mod spatial {
 /// Functions useful for game mechanics
 pub mod game_mechanics {
     use super::traits::Mortal;
+    use super::math::{check_proba, exp_decay, centred_rand};
 
-    /// A carrier of the Mortal trait attacks another
+    /// A Mortal attacks another Mortal
     /// 
     /// Both “attacker” and “victim” can be of Mob or Player 
-    /// type. The value of the attacker's “damage” field is 
-    /// deduced from the value of the victim's “hp” field.
-    pub fn attack<T: Mortal, U: Mortal>(attacker: &T, victim: &mut U) {
-        let effective_damage: i32 = attacker.get_damage() as i32;
-        let new_hp: i32 = victim.get_hp() - effective_damage;
-        victim.set_hp(new_hp);
+    /// type.
+    pub fn attack<T: Mortal, U: Mortal>(attacker: &T, victim: &mut U) -> u32 {
+        // Successful hit
+        if check_proba(attacker.get_precision()).unwrap() {
+            let base_dam: u32 =  centred_rand(attacker.get_damage());
+            let mut base_dam: f32 = base_dam as f32;
 
-        println!("ATTACK ! Remaining HP : {}", new_hp);
+            // Crit realized
+            if check_proba(attacker.get_crit_proba()).unwrap() {
+                base_dam = base_dam * attacker.get_crit_multiplier();
+                base_dam as u32
+
+            // No crit
+            } else {
+                base_dam as u32
+            }
+
+        // Missed hit
+        } else {
+            let base_dam: u32 = 0;
+            base_dam
+        }
     }
 }
 
@@ -194,8 +235,17 @@ pub mod traits {
     /// Bearers of this trait can attack, take damage and 
     /// eventually (fatally) die.
     pub trait Mortal {
-        fn get_damage(&self) -> u32;
+        // Gets
         fn get_hp(&self) -> i32;
+        fn get_armor(&self) -> i32;
+        fn get_precision(&self) -> f32;
+        fn get_damage(&self) -> u32;
+        fn get_crit_proba(&self) -> f32;
+        fn get_crit_multiplier(&self) -> f32;
+        fn get_dodge_proba(&self) -> f32;
+
+        // Sets
         fn set_hp(&mut self, new_hp: i32);
+        fn set_armor(&mut self, new_armor: i32);
     }
 }
