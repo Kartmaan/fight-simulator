@@ -4,9 +4,9 @@
 use lazy_static::lazy_static;
 use std::collections::HashMap;
 
-use crate::tools::spatial::Pos;
-use crate::tools::math::{normalize, exp_decay};
-use crate::tools::traits::Mortal;
+use crate::utils::spatial::Pos;
+use crate::utils::math::{normalize, exp_decay};
+use crate::utils::traits::Mortal;
 use crate::player::Player;
 
 /// The different types of movement that a Mob can adopt
@@ -31,6 +31,7 @@ lazy_static::lazy_static! {
             armor: 0,
             precision: 0.95,
             damage: 40,
+            damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
             dodge_proba: 0.05,
@@ -48,6 +49,7 @@ lazy_static::lazy_static! {
             armor: 50,
             precision: 0.95,
             damage: 20,
+            damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
             dodge_proba: 0.05,
@@ -63,8 +65,9 @@ lazy_static::lazy_static! {
             speed: normalize(9.0).unwrap(),
             hp: 70,
             armor: 0,
-            precision: 0.75,
+            precision: 0.85,
             damage: 40,
+            damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
             dodge_proba: 0.05,
@@ -86,6 +89,7 @@ pub struct Mob {
     armor: i32, // Armor value [0, 100]
     precision: f32, // Chance of hitting the target
     damage: u32, // Base damage
+    damage_variation: f32,
     crit_proba: f32, // Critical hit probability
     crit_multiplier: f32, // Critical multiplicative damage
     dodge_proba: f32, // Probability to dodge a hit
@@ -105,6 +109,7 @@ impl Mob {
             armor: 40,
             precision: 0.9,
             damage: 33,
+            damage_variation: 8.0,
             crit_proba: 0.05,
             crit_multiplier: 1.5,
             dodge_proba: 0.03,
@@ -182,6 +187,10 @@ impl Mortal for Mob {
 
     fn get_damage(&self) -> u32 {
         self.damage
+    }
+
+    fn get_damage_variation(&self) -> f32 {
+        self.damage_variation
     }
 
     fn get_crit_proba(&self) -> f32 {

@@ -1,9 +1,9 @@
 //! Module defining the Player structure and all its 
 //! implementations
 
-use crate::tools::spatial::Pos;
-use crate::tools::math::{normalize, exp_decay};
-use crate::tools::traits::Mortal;
+use crate::utils::spatial::Pos;
+use crate::utils::math::{normalize, exp_decay};
+use crate::utils::traits::Mortal;
 use crate::mobs::Mob;
 
 /// The different classes that can be chosen by the player. 
@@ -24,7 +24,7 @@ pub struct Player {
     armor: i32, // Armor value [0, 100]
     precision: f32, // Chance of hitting the target
     damage: u32, // Base damage
-    damage_variation: i32, // +/- x%
+    damage_variation: f32, // damage fraction
     crit_proba: f32, // Critical hit probability
     crit_multiplier: f32, // Critical multiplicative damage
     dodge_proba: f32, // Probability to dodge a hit
@@ -47,7 +47,7 @@ impl Player {
                     armor: 100,
                     precision: 0.9,
                     damage: 45,
-                    damage_variation: 2,
+                    damage_variation: 8.0,
                     crit_proba: 0.05,
                     crit_multiplier: 2.0,
                     dodge_proba: 0.08,
@@ -67,7 +67,7 @@ impl Player {
                     armor: 60,
                     precision: 0.75,
                     damage: 50,
-                    damage_variation: 1,
+                    damage_variation: 8.0,
                     crit_proba: 0.05,
                     crit_multiplier: 2.5,
                     dodge_proba: 0.15,
@@ -135,6 +135,10 @@ impl Mortal for Player {
 
     fn get_damage(&self) -> u32 {
         self.damage
+    }
+
+    fn get_damage_variation(&self) -> f32 {
+        self.damage_variation
     }
 
     fn get_crit_proba(&self) -> f32 {

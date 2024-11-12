@@ -33,7 +33,7 @@ pub mod math {
     /// }
     /// ```
     pub fn check_proba(proba: f32) -> Result<bool, String> {
-        let coef: f32;
+        //let coef: f32;
         
         // A probability of 0 could create infinite loops. 
         // Values ​​less than or equal to 0 are prohibited.
@@ -43,17 +43,17 @@ pub mod math {
         
         // If a percentage is inserted, the value is divided by 100 
         // so that it fits in the range ]0,1]
-        if proba > 1.0 && proba <= 100.0 {
+        /* if proba > 1.0 && proba <= 100.0 {
             coef = proba / 100.0;
         } else {
             return Err(String::from("Value can't be greater than 100"));
-        }
+        } */
 
         // Generation of a float between 0 and 1
         let rng_num: f32 = rand::thread_rng().gen();
 
         // Probability check
-        if rng_num < coef {
+        if rng_num < proba {
             return Ok(true);
         } else {
             return Ok(false);
@@ -147,8 +147,8 @@ pub mod math {
     /// 
     /// **Return**
     /// An integer random number between the range
-    pub fn centred_rand(central_value: u32) -> u32 {
-        let fraction: f32 = 8.0; // Fraction of 'central_value'
+    pub fn centred_rand(central_value: u32, fraction: f32) -> u32 {
+        //let fraction: f32 = 8.0; // Fraction of 'central_value'
         let central = central_value as f32;
         let mut half_range = central / fraction;
         if half_range < 1.0 {
@@ -204,12 +204,13 @@ pub mod game_mechanics {
 
     /// A Mortal attacks another Mortal
     /// 
-    /// Both “attacker” and “victim” can be of Mob or Player 
-    /// type.
-    pub fn attack<T: Mortal, U: Mortal>(attacker: &T, victim: &mut U) -> u32 {
+    /// 'attacker' can be a Mob or Player type.
+    pub fn attack<T: Mortal>(attacker: &T) -> u32 {
         // Successful hit
         if check_proba(attacker.get_precision()).unwrap() {
-            let base_dam: u32 =  centred_rand(attacker.get_damage());
+            let base_dam: u32 =  centred_rand(
+                attacker.get_damage(),
+                attacker.get_damage_variation());
             let mut base_dam: f32 = base_dam as f32;
 
             // Crit realized
@@ -231,7 +232,6 @@ pub mod game_mechanics {
 }
 
 pub mod traits {
-    
     /// Bearers of this trait can attack, take damage and 
     /// eventually (fatally) die.
     pub trait Mortal {
@@ -240,6 +240,7 @@ pub mod traits {
         fn get_armor(&self) -> i32;
         fn get_precision(&self) -> f32;
         fn get_damage(&self) -> u32;
+        fn get_damage_variation(&self) -> f32;
         fn get_crit_proba(&self) -> f32;
         fn get_crit_multiplier(&self) -> f32;
         fn get_dodge_proba(&self) -> f32;
