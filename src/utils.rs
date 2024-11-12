@@ -7,13 +7,45 @@
 pub mod math {
     use rand::Rng;
 
-    /// Tests a probability based on a percentage value : if the 
+    /// Rounds a floating-point number to a given number of 
+    /// decimal places.
+    /// 
+    /// This function takes as input a floating-point number 
+    /// `f_num` and an integer `frac_len` representing the number 
+    /// of decimal places to be retained. It returns the number 
+    /// rounded to the nearest decimal place.
+    /// 
+    /// **Algorithm**
+    /// 1. Multiply the number by 10 to the power of the number 
+    /// of decimal places to be retained.
+    /// 2. Round the result to the nearest integer.
+    /// 3. Divide the result by 10 raised to the power of the 
+    /// number of decimal places to be retained.
+    /// 
+    /// **Args**
+    /// * `f_num`: The floating-point number to be rounded.
+    /// * `frac_len`: The number of decimal places to retain.
+    /// 
+    /// **Return**
+    /// The number `f_num` rounded to `frac_len` decimal places.
+    /// 
+    /// **Example**
+    /// ```rust
+    /// let x: f32 = 3.141592;
+    /// let y: f32 = round(x, 2); // y = 3.14
+    /// ```
+    pub fn round(f_num: f32, frac_len: u32) -> f32 {
+        let multiplier = 10u32.pow(frac_len) as f32;
+        (f_num * multiplier).round() / multiplier
+    }
+
+    /// Tests a probability based on a normalized value : if the 
     /// probability is realized then the function returns `true`, 
     /// otherwise `false`.
     /// 
     /// # Arguments
     /// 
-    /// * `proba` : The probability value in percent (f32)
+    /// * `proba` : The probability between 0 and 1 (f32)
     /// 
     /// # Returns
     /// 
@@ -26,7 +58,7 @@ pub mod math {
     /// The function acts like a dice roll. For example, if we want 
     /// an event to occur only once out of three:
     /// ```
-    /// if check_proba(33.33).unwrap() {
+    /// if check_proba(0.33).unwrap() {
     ///     println!("OK");
     /// } else {
     ///     println!("NOPE");
@@ -40,14 +72,6 @@ pub mod math {
         if proba <= 0.0 {
             return Err(String::from("Value can't be less than zero"));
         }
-        
-        // If a percentage is inserted, the value is divided by 100 
-        // so that it fits in the range ]0,1]
-        /* if proba > 1.0 && proba <= 100.0 {
-            coef = proba / 100.0;
-        } else {
-            return Err(String::from("Value can't be greater than 100"));
-        } */
 
         // Generation of a float between 0 and 1
         let rng_num: f32 = rand::thread_rng().gen();
@@ -125,14 +149,11 @@ pub mod math {
     /// assert!(normalize(-1.0).is_err());
     /// ```
     pub fn normalize(value: f32) -> Result<f32, String> {
-        if value >= 0.0 && value <= 1.0 {
-            Ok(value)
-        } else if value > 1.0 && value <= 100.0 {
-            Ok(value / 100.0)
-        } else if value > 100.0 {
-            Ok(1.0)
-        } else {
-            Err(String::from("Speed value must be between 0 and 1"))
+        match value {
+            v if v >= 0.0 && v <= 1.0 => Ok(v),
+            v if v > 1.0 && v <= 100.0 => Ok(v / 100.0),
+            v if v > 100.0 => Ok(1.0),
+            _ => Err(String::from("Speed value must be between 0 and 1")),
         }
     }
 
@@ -200,7 +221,7 @@ pub mod spatial {
 /// Functions useful for game mechanics
 pub mod game_mechanics {
     use super::traits::Mortal;
-    use super::math::{check_proba, exp_decay, centred_rand};
+    use super::math::{round, check_proba, exp_decay, centred_rand};
 
     /// A Mortal attacks another Mortal
     /// 
@@ -227,6 +248,50 @@ pub mod game_mechanics {
         } else {
             let base_dam: u32 = 0;
             base_dam
+        }
+    }
+
+    pub fn defense<T: Mortal>(defender: &mut T, damage: u32) {
+        // No dodge
+        if !check_proba(defender.get_dodge_proba()).unwrap() {
+            // Armor is present
+            if defender.get_armor() > 0 {
+                let dam: f32 = damage as f32;
+                let armor: i32 = defender.get_armor();
+                let k: f32 = 0.04;
+
+                let final_dam: f32 = exp_decay(
+                    dam, 
+                    armor as f32, 
+                    k);
+
+                // Armor will be able to absorb the damage
+                if final_dam < armor as f32 {
+                    defender.set_armor(armor - final_dam as i32);
+                
+                // Armor can only take a fraction of the damage
+                } else {
+                    let hp: i32 = defender.get_hp();
+                    let extra_dam: f32 = final_dam - armor as f32;
+                    defender.set_armor(0);
+                    defender.set_hp(hp - extra_dam as i32);
+                }
+            
+            // Armor is broken
+            } else {
+                // Still alive
+                if defender.get_hp() > 0 {
+                    defender.set_hp(defender.get_hp() - damage as i32);
+                
+                // Already dead...
+                } else {
+                    defender.set_hp(0);
+                }
+            }
+        println!("Armor: {} | HP: {} ", defender.get_armor(), defender.get_hp());
+        // Dodge
+        } else {
+            println!("DODGE !");
         }
     }
 }
