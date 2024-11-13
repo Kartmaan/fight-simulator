@@ -3,38 +3,36 @@ mod player;
 mod mobs;
 
 use player::{Player, PlayerClass};
-use mobs::{Mob, MoveCategory, BESTIARY, get_mob};
+use mobs::{Mob, get_mob};
 use utils::spatial::Pos;
-use utils::math::{normalize, check_proba, exp_decay};
+use utils::math::round;
 use utils::game_mechanics::{attack, defense};
+use utils::traits::Mortal;
 
 fn main() {
-    let mut dragon = get_mob("dragon").unwrap();
-    dragon.move_to(51, 78);
-    //dragon.info();
-    //println!("{:?}", dragon.get_pos());
+    // let mut dragon: Mob = get_mob("dragon").unwrap();
 
-    let mut gobelin = get_mob("gobelin").unwrap();
-    //gobelin.info();
+    // let mut gobelin: Mob = get_mob("gobelin").unwrap();
 
-    let mut shark = get_mob("shark").unwrap();
-    //shark.info();
+    let mut shark: Mob = get_mob("shark").unwrap();
 
     let mut player = Player::new(
         "Lost".to_string(), 
         PlayerClass::Warrior, 
         Pos::new(50, 50));
-    
-    //player.info();
 
     //let dam = attack(&shark);
     //println!("{}", dam);
 
-    /* for _ in 1..40 {
-        print!("{}|", attack(&shark));
-    } */
+    for _ in 1..40 {
+        print!("{}|", round(attack(&shark), 2));
+    }
 
-    for _ in 1..50 {
-        defense(&mut player, 25);
+    for hit in 1..50 {
+        defense(&mut player, 50);
+        if player.get_hp() <= 0 {
+            println!("Hits: {}", hit);
+            break;
+        }
     }
 }

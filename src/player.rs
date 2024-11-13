@@ -21,9 +21,9 @@ pub struct Player {
     pub pos: Pos,
     speed: f32,
     hp: i32,
-    armor: i32, // Armor value [0, 100]
+    armor: f32, // Armor value [0, 100]
     precision: f32, // Chance of hitting the target
-    damage: u32, // Base damage
+    damage: f32, // Base damage
     damage_variation: f32, // damage fraction
     crit_proba: f32, // Critical hit probability
     crit_multiplier: f32, // Critical multiplicative damage
@@ -44,9 +44,9 @@ impl Player {
                     pos: pos,
                     speed: 0.25,
                     hp: 200,
-                    armor: 100,
+                    armor: 100.0,
                     precision: 0.9,
-                    damage: 45,
+                    damage: 45.0,
                     damage_variation: 8.0,
                     crit_proba: 0.05,
                     crit_multiplier: 2.0,
@@ -64,9 +64,9 @@ impl Player {
                     pos: pos,
                     speed: 0.4,
                     hp: 100,
-                    armor: 60,
+                    armor: 60.0,
                     precision: 0.75,
-                    damage: 50,
+                    damage: 50.0,
                     damage_variation: 8.0,
                     crit_proba: 0.05,
                     crit_multiplier: 2.5,
@@ -125,7 +125,7 @@ impl Mortal for Player {
         self.hp
     }
 
-    fn get_armor(&self) -> i32 {
+    fn get_armor(&self) -> f32 {
         self.armor
     }
 
@@ -133,7 +133,7 @@ impl Mortal for Player {
         self.precision
     }
 
-    fn get_damage(&self) -> u32 {
+    fn get_damage(&self) -> f32 {
         self.damage
     }
 
@@ -153,12 +153,36 @@ impl Mortal for Player {
         self.dodge_proba
     }
 
+    fn get_in_alert(&self) -> bool {
+        self.in_alert
+    }
+
+    fn get_is_attacking(&self) -> bool {
+        self.is_attacking
+    }
+
+    fn get_is_alive(&self) -> bool {
+        self.is_alive
+    }
+
     // ------ SETS ------
     fn set_hp(&mut self, new_hp: i32) {
         self.hp = new_hp;
     }
 
-    fn set_armor(&mut self, new_armor: i32) {
+    fn set_armor(&mut self, new_armor: f32) {
         self.armor = new_armor;
+    }
+
+    fn set_in_alert(&mut self, new_bool: bool) {
+        self.in_alert = new_bool;
+    }
+
+    fn set_is_attacking(&mut self, new_bool: bool) {
+        self.is_attacking = new_bool;
+    }
+
+    fn set_is_alive(&mut self, new_bool: bool) {
+        self.is_alive = new_bool;
     }
 }

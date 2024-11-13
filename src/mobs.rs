@@ -28,9 +28,9 @@ lazy_static::lazy_static! {
             pos: Pos::default(),
             speed: normalize(15.0).unwrap(),
             hp: 230,
-            armor: 0,
+            armor: 0.0,
             precision: 0.95,
-            damage: 40,
+            damage: 40.0,
             damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
@@ -46,9 +46,9 @@ lazy_static::lazy_static! {
             pos: Pos::default(),
             speed: normalize(9.0).unwrap(),
             hp: 80,
-            armor: 50,
+            armor: 50.0,
             precision: 0.95,
-            damage: 20,
+            damage: 20.0,
             damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
@@ -64,9 +64,9 @@ lazy_static::lazy_static! {
             pos: Pos::default(),
             speed: normalize(9.0).unwrap(),
             hp: 70,
-            armor: 0,
+            armor: 0.0,
             precision: 0.85,
-            damage: 40,
+            damage: 40.0,
             damage_variation: 8.0,
             crit_proba: 0.1,
             crit_multiplier: 2.0,
@@ -86,9 +86,9 @@ pub struct Mob {
     pos: Pos,
     speed: f32,
     hp: i32,
-    armor: i32, // Armor value [0, 100]
+    armor: f32, // Armor value [0, 100]
     precision: f32, // Chance of hitting the target
-    damage: u32, // Base damage
+    damage: f32, // Base damage
     damage_variation: f32,
     crit_proba: f32, // Critical hit probability
     crit_multiplier: f32, // Critical multiplicative damage
@@ -106,9 +106,9 @@ impl Mob {
             pos: pos,
             speed: normalize(speed).unwrap(),
             hp: 100,
-            armor: 40,
+            armor: 40.0,
             precision: 0.9,
-            damage: 33,
+            damage: 33.0,
             damage_variation: 8.0,
             crit_proba: 0.05,
             crit_multiplier: 1.5,
@@ -177,7 +177,7 @@ impl Mortal for Mob {
         self.hp
     }
 
-    fn get_armor(&self) -> i32 {
+    fn get_armor(&self) -> f32 {
         self.armor
     }
 
@@ -185,7 +185,7 @@ impl Mortal for Mob {
         self.precision
     }
 
-    fn get_damage(&self) -> u32 {
+    fn get_damage(&self) -> f32 {
         self.damage
     }
 
@@ -205,13 +205,37 @@ impl Mortal for Mob {
         self.dodge_proba
     }
 
+    fn get_in_alert(&self) -> bool {
+        self.in_alert
+    }
+
+    fn get_is_attacking(&self) -> bool {
+        self.is_attacking
+    }
+
+    fn get_is_alive(&self) -> bool {
+        self.is_alive
+    }
+
     // ------ SETS ------
     fn set_hp(&mut self, new_hp: i32) {
         self.hp = new_hp;
     }
 
-    fn set_armor(&mut self, new_armor: i32) {
+    fn set_armor(&mut self, new_armor: f32) {
         self.armor = new_armor;
+    }
+
+    fn set_in_alert(&mut self, new_bool: bool) {
+        self.in_alert = new_bool;
+    }
+
+    fn set_is_attacking(&mut self, new_bool: bool) {
+        self.is_attacking = new_bool;
+    }
+
+    fn set_is_alive(&mut self, new_bool: bool) {
+        self.is_alive = new_bool;
     }
 }
 

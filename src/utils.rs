@@ -65,19 +65,27 @@ pub mod math {
     /// }
     /// ```
     pub fn check_proba(proba: f32) -> Result<bool, String> {
-        //let coef: f32;
-        
+        let mut proba_val: f32 = proba;
+
         // A probability of 0 could create infinite loops. 
         // Values ​​less than or equal to 0 are prohibited.
         if proba <= 0.0 {
             return Err(String::from("Value can't be less than zero"));
+        
+        // Normalization : Perhaps the user tries to enter a 
+        // percentage value
+        } else if proba > 1.0 {
+            proba_val = normalize(proba).unwrap();
         }
+
+        // At this point, we should be sure to have a 'proba_val' 
+        // between 0.0 and 1.0
 
         // Generation of a float between 0 and 1
         let rng_num: f32 = rand::thread_rng().gen();
 
         // Probability check
-        if rng_num < proba {
+        if rng_num < proba_val {
             return Ok(true);
         } else {
             return Ok(false);
@@ -159,25 +167,33 @@ pub mod math {
 
     /// Generates a random value centered around a given value
     /// 
-    /// The range limits are plus and minus 1/8 of the 
+    /// The range limits are plus and minus 1/`fraction` of the 
     /// central value.
     /// 
     /// **Args**
     /// * 'central_value' : The value around which to center the 
     /// random number
+    /// * 'fraction' : Fraction of 'central_value' which will 
+    /// be the half range around it (see exemple).
     /// 
     /// **Return**
     /// An integer random number between the range
-    pub fn centred_rand(central_value: u32, fraction: f32) -> u32 {
-        //let fraction: f32 = 8.0; // Fraction of 'central_value'
-        let central = central_value as f32;
-        let mut half_range = central / fraction;
+    /// 
+    /// **Example**
+    /// * `central_value` = 10
+    /// * `fraction` = 2 \
+    /// The width of the range centered on `central_value` will 
+    /// be `central_value` / `fraction` = 5. The random value will 
+    /// therefore oscillate between 5 and 15. The smaller the 
+    /// `fraction` value, the wider the oscillation. 
+    pub fn centred_rand(central_value: f32, fraction: f32) -> f32 {
+        let mut half_range = central_value / fraction;
         if half_range < 1.0 {
             half_range = half_range.ceil();
         }
 
-        let from = (central - half_range) as u32;
-        let to = (central + half_range) as u32;
+        let from = (central_value - half_range);
+        let to = (central_value + half_range);
         let rand_val = rand::thread_rng().gen_range(from..=to);
 
         rand_val
@@ -218,18 +234,27 @@ pub mod spatial {
     }
 }
 
-/// Functions useful for game mechanics
+/// Functions defining some game mechanics
 pub mod game_mechanics {
     use super::traits::Mortal;
     use super::math::{round, check_proba, exp_decay, centred_rand};
 
-    /// A Mortal attacks another Mortal
+    /// Returns the effective damage of a `Mortal`
     /// 
-    /// 'attacker' can be a Mob or Player type.
-    pub fn attack<T: Mortal>(attacker: &T) -> u32 {
-        // Successful hit
+    /// The final damage can vary depending on several parameters 
+    /// such as the `precision`, `damage` and `damage_variation` 
+    /// value of `attacker`.
+    /// 
+    /// **Args**
+    /// * `attacker`: Bearer of the `Mortal` trait. can be a 
+    /// `Mob` or a `Player` 
+    /// 
+    /// **Return**
+    /// * `f32`: The final damage of `attacker`.
+    pub fn attack<T: Mortal>(attacker: &T) -> f32 {
+        // The accuracy test is passed : the blow is delivered
         if check_proba(attacker.get_precision()).unwrap() {
-            let base_dam: u32 =  centred_rand(
+            let base_dam: f32 =  centred_rand(
                 attacker.get_damage(),
                 attacker.get_damage_variation());
             let mut base_dam: f32 = base_dam as f32;
@@ -237,27 +262,37 @@ pub mod game_mechanics {
             // Crit realized
             if check_proba(attacker.get_crit_proba()).unwrap() {
                 base_dam = base_dam * attacker.get_crit_multiplier();
-                base_dam as u32
+                base_dam
 
             // No crit
             } else {
-                base_dam as u32
+                base_dam
             }
 
         // Missed hit
         } else {
-            let base_dam: u32 = 0;
+            let base_dam= 0.0;
             base_dam
         }
     }
 
+    /// A `Mortal` takes a damage value.
+    /// 
+    /// `defender` armor and/or HP values ​​are directly 
+    /// modified according to several parameters such as 
+    /// `defender`s armor and `dodge_proba` value.
+    /// 
+    /// **Args**
+    /// * `defender` : The one who receives the damage. Can be a 
+    /// Mob or a Player.
+    /// * `damage` : The amount of damage received
     pub fn defense<T: Mortal>(defender: &mut T, damage: u32) {
-        // No dodge
+        // No dodging - Right in the face
         if !check_proba(defender.get_dodge_proba()).unwrap() {
             // Armor is present
-            if defender.get_armor() > 0 {
+            if defender.get_armor() > 0.0 {
                 let dam: f32 = damage as f32;
-                let armor: i32 = defender.get_armor();
+                let armor: f32 = defender.get_armor();
                 let k: f32 = 0.04;
 
                 let final_dam: f32 = exp_decay(
@@ -267,13 +302,13 @@ pub mod game_mechanics {
 
                 // Armor will be able to absorb the damage
                 if final_dam < armor as f32 {
-                    defender.set_armor(armor - final_dam as i32);
+                    defender.set_armor(armor - final_dam);
                 
                 // Armor can only take a fraction of the damage
                 } else {
                     let hp: i32 = defender.get_hp();
-                    let extra_dam: f32 = final_dam - armor as f32;
-                    defender.set_armor(0);
+                    let extra_dam: f32 = final_dam - armor;
+                    defender.set_armor(0.0);
                     defender.set_hp(hp - extra_dam as i32);
                 }
             
@@ -288,7 +323,7 @@ pub mod game_mechanics {
                     defender.set_hp(0);
                 }
             }
-        println!("Armor: {} | HP: {} ", defender.get_armor(), defender.get_hp());
+        println!("Armor: {} | HP: {} ", round(defender.get_armor(), 3), defender.get_hp());
         // Dodge
         } else {
             println!("DODGE !");
@@ -302,16 +337,22 @@ pub mod traits {
     pub trait Mortal {
         // Gets
         fn get_hp(&self) -> i32;
-        fn get_armor(&self) -> i32;
+        fn get_armor(&self) -> f32;
         fn get_precision(&self) -> f32;
-        fn get_damage(&self) -> u32;
+        fn get_damage(&self) -> f32;
         fn get_damage_variation(&self) -> f32;
         fn get_crit_proba(&self) -> f32;
         fn get_crit_multiplier(&self) -> f32;
         fn get_dodge_proba(&self) -> f32;
+        fn get_in_alert(&self) -> bool;
+        fn get_is_attacking(&self) -> bool;
+        fn get_is_alive(&self) -> bool;
 
         // Sets
         fn set_hp(&mut self, new_hp: i32);
-        fn set_armor(&mut self, new_armor: i32);
+        fn set_armor(&mut self, new_armor: f32);
+        fn set_in_alert(&mut self, new_bool: bool);
+        fn set_is_attacking(&mut self, new_bool: bool);
+        fn set_is_alive(&mut self, new_bool: bool);
     }
 }
