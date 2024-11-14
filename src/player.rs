@@ -3,8 +3,8 @@
 
 use crate::utils::spatial::Pos;
 use crate::utils::math::{normalize, exp_decay};
-use crate::utils::traits::Mortal;
-use crate::mobs::Mob;
+use crate::utils::traits::{Mortal, Located};
+//use crate::mobs::Mob;
 
 /// The different classes that can be chosen by the player. 
 /// They can bring penalties or bonuses to their characteristics.
@@ -79,11 +79,6 @@ impl Player {
         } // match
     }
 
-    /// Player movement
-    pub fn move_to(&mut self, x:i32, y:i32) {
-        self.pos.move_to(x, y);
-    }
-
     /// Prints Player's infos
     pub fn info(&self) {
         println!("\nName : {:?}", self.name);
@@ -92,30 +87,6 @@ impl Player {
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
-    }
-
-    /// Receiving damage
-    pub fn hit(&mut self, damage: i32) {
-        self.hp = self.hp - damage;
-
-        // Damage reducing health below 0
-        if self.hp < 0 {
-            self.hp = 0;
-        }
-
-        if self.hp > 0 {
-            self.is_alive = true;
-        } else {
-            self.is_alive = false;
-        }
-    }
-
-    /// Euclidian distance between a Player and a Mob
-    pub fn dist(&self, mob_pos:&Mob) -> f32 {
-        let player_pos = &self.pos;
-        let mob_pos = &mob_pos.get_pos();
-        let distance = player_pos.dist(mob_pos);
-        return distance;
     }
 }
 
@@ -184,5 +155,30 @@ impl Mortal for Player {
 
     fn set_is_alive(&mut self, new_bool: bool) {
         self.is_alive = new_bool;
+    }
+
+    // ------ Actions ------
+    fn kill(&mut self) {
+        self.armor = 0.0;
+        self.hp = 0;
+        self.in_alert = false;
+        self.is_attacking = false;
+        self.is_alive = false;
+    }
+}
+
+impl Located for Player {
+    fn get_pos(&self) -> Pos {
+        self.pos.clone()
+    }
+
+    fn get_distance<T: Located>(&self, other: T) -> f32 {
+        let player_pos = self.pos.clone();
+        let other_pos = other.get_pos();
+        player_pos.dist(&other_pos)
+    }
+
+    fn set_pos(&mut self, new_pos: Pos) {
+        self.pos = new_pos;
     }
 }

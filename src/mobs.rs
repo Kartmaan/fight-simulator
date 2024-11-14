@@ -6,7 +6,7 @@ use std::collections::HashMap;
 
 use crate::utils::spatial::Pos;
 use crate::utils::math::{normalize, exp_decay};
-use crate::utils::traits::Mortal;
+use crate::utils::traits::{Mortal, Located};
 use crate::player::Player;
 
 /// The different types of movement that a Mob can adopt
@@ -119,16 +119,6 @@ impl Mob {
         }
     }
 
-    /// Returns the position of the Mob
-    pub fn get_pos(&self) -> &Pos {
-        &self.pos
-    }
-
-    /// Moves a Mob to a x, y coordinates
-    pub fn move_to(&mut self, x:i32, y:i32) {
-        self.pos.move_to(x, y);
-    }
-
     /// Prints some infos about the Mob
     pub fn info(&self) {
         println!("\nCategory : {:?}", self.category);
@@ -136,22 +126,6 @@ impl Mob {
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
-    }
-
-    /// The Mob recieved damage
-    pub fn hit(&mut self, damage: i32) {
-        self.hp = self.hp - damage;
-
-        // Damage reducing health below 0
-        if self.hp < 0 {
-            self.hp = 0;
-        }
-
-        if self.hp > 0 {
-            self.is_alive = true;
-        } else {
-            self.is_alive = false;
-        }
     }
 
     /// Euclidian distance between a Mob and the player
@@ -236,6 +210,31 @@ impl Mortal for Mob {
 
     fn set_is_alive(&mut self, new_bool: bool) {
         self.is_alive = new_bool;
+    }
+
+    // ------ Actions ------
+    fn kill(&mut self) {
+        self.armor = 0.0;
+        self.hp = 0;
+        self.in_alert = false;
+        self.is_attacking = false;
+        self.is_alive = false;
+    }
+}
+
+impl Located for Mob {
+    fn get_pos(&self) -> Pos {
+        self.pos.clone()
+    }
+
+    fn get_distance<T: Located>(&self, other: T) -> f32 {
+        let mob_pos = self.pos.clone();
+        let other_pos = other.get_pos();
+        mob_pos.dist(&other_pos)
+    }
+
+    fn set_pos(&mut self, new_pos: Pos) {
+        self.pos = new_pos;
     }
 }
 

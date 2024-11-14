@@ -7,24 +7,21 @@ use mobs::{Mob, get_mob};
 use utils::spatial::Pos;
 use utils::math::round;
 use utils::game_mechanics::{attack, defense};
-use utils::traits::Mortal;
+use utils::traits::{Located, Mortal};
 
 fn main() {
-    // let mut dragon: Mob = get_mob("dragon").unwrap();
-
-    // let mut gobelin: Mob = get_mob("gobelin").unwrap();
-
     let mut shark: Mob = get_mob("shark").unwrap();
+    shark.set_pos(Pos::new(170, 45));
 
     let mut player = Player::new(
         "Lost".to_string(), 
         PlayerClass::Warrior, 
         Pos::new(50, 50));
+    
+    let dist = player.get_distance(shark);
+    println!("{}", dist);
 
-    //let dam = attack(&shark);
-    //println!("{}", dam);
-
-    for _ in 1..40 {
+    /* for _ in 1..40 {
         print!("{}|", round(attack(&shark), 2));
     }
 
@@ -34,5 +31,5 @@ fn main() {
             println!("Hits: {}", hit);
             break;
         }
-    }
+    } */
 }

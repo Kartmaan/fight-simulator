@@ -1,8 +1,6 @@
 //! Set of tools useful for manipulation of numeric and 
 //! alphabetic values
 
-//use crate::tools::traits::Entity;
-
 /// Mathematical tools
 pub mod math {
     use rand::Rng;
@@ -10,14 +8,15 @@ pub mod math {
     /// Rounds a floating-point number to a given number of 
     /// decimal places.
     /// 
-    /// This function takes as input a floating-point number 
-    /// `f_num` and an integer `frac_len` representing the number 
-    /// of decimal places to be retained. It returns the number 
-    /// rounded to the nearest decimal place.
+    /// This function takes as input a floating-point 
+    /// number `f_num` and an integer `frac_len` 
+    /// representing the number of decimal places to be 
+    /// retained. It returns the number rounded to the 
+    /// nearest decimal place.
     /// 
     /// **Algorithm**
-    /// 1. Multiply the number by 10 to the power of the number 
-    /// of decimal places to be retained.
+    /// 1. Multiply the number by 10 to the power of the 
+    /// number of decimal places to be retained.
     /// 2. Round the result to the nearest integer.
     /// 3. Divide the result by 10 raised to the power of the 
     /// number of decimal places to be retained.
@@ -39,11 +38,11 @@ pub mod math {
         (f_num * multiplier).round() / multiplier
     }
 
-    /// Tests a probability based on a normalized value : if the 
-    /// probability is realized then the function returns `true`, 
-    /// otherwise `false`.
+    /// Tests a probability based on a normalized value : 
+    /// if the probability is realized then the function 
+    /// returns `true`, otherwise `false`.
     /// 
-    /// # Arguments
+    /// # Args
     /// 
     /// * `proba` : The probability between 0 and 1 (f32)
     /// 
@@ -53,10 +52,15 @@ pub mod math {
     /// * `Ok(false)` : The probability was not realized
     /// * `Err(String)` : An error has been encountered
     /// 
+    /// # Error
+    /// 
+    /// Inserting a negative value generates a `panic!`
+    /// 
     /// # Example
     /// 
-    /// The function acts like a dice roll. For example, if we want 
-    /// an event to occur only once out of three:
+    /// The function acts like a dice roll. For example, 
+    /// if we want an event to occur only once out of 
+    /// three:
     /// ```
     /// if check_proba(0.33).unwrap() {
     ///     println!("OK");
@@ -66,10 +70,9 @@ pub mod math {
     /// ```
     pub fn check_proba(proba: f32) -> Result<bool, String> {
         let mut proba_val: f32 = proba;
-
-        // A probability of 0 could create infinite loops. 
+ 
         // Values ​​less than or equal to 0 are prohibited.
-        if proba <= 0.0 {
+        if proba < 0.0 {
             return Err(String::from("Value can't be less than zero"));
         
         // Normalization : Perhaps the user tries to enter a 
@@ -92,14 +95,14 @@ pub mod math {
         }
     }
 
-    /// Calculates an exponential reduction of an initial value based 
-    /// on a given factor.
+    /// Calculates an exponential reduction of an initial 
+    /// value based on a given factor.
     /// 
     /// # Arguments
     /// 
     /// * `init_value` - The initial value to reduce (f32).
-    /// * `factor` - The decline factor that influences the intensity 
-    /// of the reduction (f32).
+    /// * `factor` - The decline factor that influences 
+    /// the intensity of the reduction (f32).
     /// * `k` - Parameter controlling the decay rate.
     /// 
     /// # Returns
@@ -108,23 +111,26 @@ pub mod math {
     /// reduction (f32).
     /// 
     /// # Example
-    /// Let's imagine a damage reduction function: `input_value` 
-    /// would be the initial damage, while `factor` would be our 
-    /// armor points, the higher these are, the greater the reduction 
-    /// of `input_value` will be. If the damage received is 50 and 
-    /// our armor is 100 with a parameter k set to 0.0217 then the 
-    /// function will be called as follows: 
+    /// Let's imagine a damage reduction function: 
+    /// `input_value` would be the initial damage, 
+    /// while `factor` would be our armor points, the 
+    /// higher these are, the greater the reduction of 
+    /// `input_value` will be. If the damage received 
+    /// is 50 and our armor is 100 with a parameter k 
+    /// set to 0.0217 then the function will be called 
+    /// as follows: 
     /// ```
     /// let final_dam = exp_decay(50.0, 100.0, 0.0217);
     /// println!("{}", final_dam) // 5.708
     /// ```
-    /// The 50 initial damage is reduced to around 5.7, the higher 
-    /// the armor value the more effective this defense will be 
-    /// and vice versa.
+    /// The 50 initial damage is reduced to around 5.7, 
+    /// the higher the armor value the more effective 
+    /// this defense will be and vice versa.
     /// 
     /// # Note
-    /// *This function uses the exponential function `exp()` from the 
-    /// Rust standard library whose precision is not deterministic*.
+    /// *This function uses the exponential function 
+    /// `exp()` from the Rust standard library whose 
+    /// precision is not deterministic*.
     pub fn exp_decay(input_value: f32, factor: f32, k: f32) -> f32 {
         let final_dam: f32 = input_value * (-k * factor).exp();
         return  final_dam;
@@ -133,23 +139,26 @@ pub mod math {
     /// Normalizes a value to be between 0 and 1.
     /// 
     /// # Details
-    /// The function will attempt by several means to normalize the 
-    /// value according to its order of magnitude.
-    /// - If the value is within the range [0,1] it's returned as is. 
-    /// - If the value is within the range ]1,100] then the it's 
-    /// divided by 100.
+    /// The function will attempt by several means to 
+    /// normalize the value according to its order of 
+    /// magnitude.
+    /// - If the value is within the range [0,1] it's 
+    /// returned as is. 
+    /// - If the value is within the range ]1,100] then 
+    /// the it's divided by 100.
     /// - All values ​​greater than 100 become 1.0.
-    /// - Otherwise the function returns an error (we assume that 
-    /// the value is negative).
+    /// - Otherwise the function returns an error (we assume 
+    /// that the value is negative).
     /// 
-    /// # Arguments
+    /// # Args
     /// * `value` - The f32 value to be normalized.
     /// 
-    /// # Return value
+    /// # Returns
     /// * `Ok(f32)` - The normalized value if valid.
-    /// * `Err(String)` - Error message if the value is invalid.
+    /// * `Err(String)` - Error message if the value is 
+    /// invalid.
     /// 
-    /// # Exemples
+    /// # Examples
     /// ```
     /// assert_eq!(normalize(0.5).unwrap(), 0.5);
     /// assert_eq!(normalize(50.0).unwrap(), 0.5);
@@ -165,16 +174,17 @@ pub mod math {
         }
     }
 
-    /// Generates a random value centered around a given value
+    /// Generates a random value centered around a given 
+    /// value
     /// 
-    /// The range limits are plus and minus 1/`fraction` of the 
-    /// central value.
+    /// The range limits are plus and minus 1/`fraction` 
+    /// of the central value.
     /// 
     /// **Args**
-    /// * 'central_value' : The value around which to center the 
-    /// random number
-    /// * 'fraction' : Fraction of 'central_value' which will 
-    /// be the half range around it (see exemple).
+    /// * 'central_value' : The value around which to 
+    /// center the random number
+    /// * 'fraction' : Fraction of 'central_value' which 
+    /// will be the half range around it (see exemple).
     /// 
     /// **Return**
     /// An integer random number between the range
@@ -182,10 +192,11 @@ pub mod math {
     /// **Example**
     /// * `central_value` = 10
     /// * `fraction` = 2 \
-    /// The width of the range centered on `central_value` will 
-    /// be `central_value` / `fraction` = 5. The random value will 
-    /// therefore oscillate between 5 and 15. The smaller the 
-    /// `fraction` value, the wider the oscillation. 
+    /// The width of the range centered on `central_value`
+    /// will be `central_value` / `fraction` = 5. The 
+    /// random value will therefore oscillate between 5 
+    /// and 15. The smaller the `fraction` value, the 
+    /// wider the oscillation. 
     pub fn centred_rand(central_value: f32, fraction: f32) -> f32 {
         let mut half_range = central_value / fraction;
         if half_range < 1.0 {
@@ -200,7 +211,8 @@ pub mod math {
     }
 }
 
-/// Structures and methods for geometric operations in 2D space
+/// Structures and methods for geometric operations in 
+/// 2D space
 pub mod spatial {
     /// 2D coordinates structure
     #[derive(Debug, Clone)]
@@ -228,8 +240,10 @@ pub mod spatial {
     
         /// Euclidian distance between two coordinates
         pub fn dist(&self, other:&Pos) -> f32 {
-            let res = (other.x - self.x).pow(2) + (other.y - self.y).pow(2);
-            (res as f32).sqrt()
+            let res = 
+            ((other.x - self.x).pow(2) as f32) + 
+            ((other.y - self.y).pow(2) as f32);
+            res.sqrt()
         }
     }
 }
@@ -241,13 +255,13 @@ pub mod game_mechanics {
 
     /// Returns the effective damage of a `Mortal`
     /// 
-    /// The final damage can vary depending on several parameters 
-    /// such as the `precision`, `damage` and `damage_variation` 
-    /// value of `attacker`.
+    /// The final damage can vary depending on several 
+    /// parameters such as the `precision`, `damage` and 
+    /// `damage_variation` value of `attacker`.
     /// 
     /// **Args**
-    /// * `attacker`: Bearer of the `Mortal` trait. can be a 
-    /// `Mob` or a `Player` 
+    /// * `attacker`: Bearer of the `Mortal` trait. can 
+    /// be a `Mob` or a `Player` 
     /// 
     /// **Return**
     /// * `f32`: The final damage of `attacker`.
@@ -276,16 +290,16 @@ pub mod game_mechanics {
         }
     }
 
-    /// A `Mortal` takes a damage value.
+    /// A `Mortal` takes a damage.
     /// 
     /// `defender` armor and/or HP values ​​are directly 
     /// modified according to several parameters such as 
     /// `defender`s armor and `dodge_proba` value.
     /// 
     /// **Args**
-    /// * `defender` : The one who receives the damage. Can be a 
-    /// Mob or a Player.
-    /// * `damage` : The amount of damage received
+    /// * `defender` : The one who receives the damage. 
+    /// Can be a `Mob` or a `Player`.
+    /// * `damage` : The amount of damage received.
     pub fn defense<T: Mortal>(defender: &mut T, damage: u32) {
         // No dodging - Right in the face
         if !check_proba(defender.get_dodge_proba()).unwrap() {
@@ -304,7 +318,8 @@ pub mod game_mechanics {
                 if final_dam < armor as f32 {
                     defender.set_armor(armor - final_dam);
                 
-                // Armor can only take a fraction of the damage
+                // Armor can only take a fraction of the 
+                //damage
                 } else {
                     let hp: i32 = defender.get_hp();
                     let extra_dam: f32 = final_dam - armor;
@@ -329,13 +344,18 @@ pub mod game_mechanics {
             println!("DODGE !");
         }
     }
+
+    /// Let them fight : Fight between two `Mortal`
+    pub fn battle<T: Mortal, U: Mortal>(fighter_1: &T, fighter_2: &U) {
+        let test = 0;
+    }
 }
 
 pub mod traits {
-    /// Bearers of this trait can attack, take damage and 
-    /// eventually (fatally) die.
+    use super::spatial::Pos;
+    /// Anything that can attack, defend and die.
     pub trait Mortal {
-        // Gets
+        // ----- Gets -----
         fn get_hp(&self) -> i32;
         fn get_armor(&self) -> f32;
         fn get_precision(&self) -> f32;
@@ -348,11 +368,28 @@ pub mod traits {
         fn get_is_attacking(&self) -> bool;
         fn get_is_alive(&self) -> bool;
 
-        // Sets
+        //  ----- Sets -----
         fn set_hp(&mut self, new_hp: i32);
         fn set_armor(&mut self, new_armor: f32);
         fn set_in_alert(&mut self, new_bool: bool);
         fn set_is_attacking(&mut self, new_bool: bool);
         fn set_is_alive(&mut self, new_bool: bool);
+
+        //  ----- Actions -----
+        /// Gives full meaning to the Mortal trait
+        fn kill(&mut self);
+    }
+
+    /// Everything that can be located in space
+    pub trait Located {
+        /// Returns the position of a Located trait carrier
+        fn get_pos(&self) -> Pos;
+
+        /// Returns the euclidean distance between two 
+        /// carriers of the Located trait
+        fn get_distance<T: Located>(&self, other: T) -> f32;
+
+        /// Changes the position of a Located trait carrier
+        fn set_pos(&mut self, new_pos: Pos);
     }
 }
