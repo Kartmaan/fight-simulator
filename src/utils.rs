@@ -250,6 +250,8 @@ pub mod spatial {
 
 /// Functions defining some game mechanics
 pub mod game_mechanics {
+    use rand::Rng;
+
     use super::traits::Mortal;
     use super::math::{round, check_proba, exp_decay, centred_rand};
 
@@ -265,7 +267,7 @@ pub mod game_mechanics {
     /// 
     /// **Return**
     /// * `f32`: The final damage of `attacker`.
-    pub fn attack<T: Mortal>(attacker: &T) -> f32 {
+    pub fn attack<T: Mortal + ?Sized>(attacker: &T) -> f32 {
         // The accuracy test is passed : the blow is delivered
         if check_proba(attacker.get_precision()).unwrap() {
             let base_dam: f32 =  centred_rand(
@@ -300,12 +302,12 @@ pub mod game_mechanics {
     /// * `defender` : The one who receives the damage. 
     /// Can be a `Mob` or a `Player`.
     /// * `damage` : The amount of damage received.
-    pub fn defense<T: Mortal>(defender: &mut T, damage: u32) {
+    pub fn defense<T: Mortal + ?Sized>(defender: &mut T, damage: f32) {
         // No dodging - Right in the face
         if !check_proba(defender.get_dodge_proba()).unwrap() {
             // Armor is present
             if defender.get_armor() > 0.0 {
-                let dam: f32 = damage as f32;
+                let dam: f32 = damage;
                 let armor: f32 = defender.get_armor();
                 let k: f32 = 0.04;
 
@@ -345,9 +347,36 @@ pub mod game_mechanics {
         }
     }
 
-    /// Let them fight : Fight between two `Mortal`
-    pub fn battle<T: Mortal, U: Mortal>(fighter_1: &T, fighter_2: &U) {
-        let test = 0;
+    /// Let them fight : Fight between two `Mortal`s
+    pub fn battle<T: Mortal, U: Mortal>(fighter_1: &mut T, fighter_2: &mut U) {
+        let mut damage: f32;
+
+        loop {
+            // figher_1 attacks fighter_2
+            damage = attack(fighter_1);
+            defense(fighter_2, damage);
+            println!("Fighter 2 -> Armor : {} | HP : {}", fighter_2.get_armor(), fighter_2.get_hp());
+
+            // fighter_2 still alive and counter attacking
+            if fighter_2.get_hp() > 0 {
+                damage = attack(fighter_2);
+                defense(fighter_1, damage);
+                println!("Fighter 1 -> Armor : {} | HP : {}", fighter_1.get_armor(), fighter_1.get_hp());
+            // fighter_2 dies -> figher_1 wins
+            } else {
+                println!("Fighter_1 wins");
+                break;
+            }
+
+            // fighter_1 resisted the blow
+            if fighter_1.get_hp() > 0 {
+                continue;
+            // fighter_1 dies -> figher_2 wins
+            } else {
+                println!("Fighter_2 wins");
+                break;
+            }
+        }
     }
 }
 
@@ -387,7 +416,7 @@ pub mod traits {
 
         /// Returns the euclidean distance between two 
         /// carriers of the Located trait
-        fn get_distance<T: Located>(&self, other: T) -> f32;
+        fn get_distance<T: Located>(&self, other: &T) -> f32;
 
         /// Changes the position of a Located trait carrier
         fn set_pos(&mut self, new_pos: Pos);

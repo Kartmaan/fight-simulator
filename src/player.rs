@@ -85,6 +85,7 @@ impl Player {
         println!("\nClass : {:?}", self.class);
         println!("Speed : {}", self.speed);
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
+        println!("Armor : {}", self.armor);
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
     }
@@ -172,7 +173,7 @@ impl Located for Player {
         self.pos.clone()
     }
 
-    fn get_distance<T: Located>(&self, other: T) -> f32 {
+    fn get_distance<T: Located>(&self, other: &T) -> f32 {
         let player_pos = self.pos.clone();
         let other_pos = other.get_pos();
         player_pos.dist(&other_pos)

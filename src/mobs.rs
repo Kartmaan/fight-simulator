@@ -124,6 +124,7 @@ impl Mob {
         println!("\nCategory : {:?}", self.category);
         println!("Speed : {}", self.speed);
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
+        println!("Armor : {}", self.armor);
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
     }
@@ -227,7 +228,7 @@ impl Located for Mob {
         self.pos.clone()
     }
 
-    fn get_distance<T: Located>(&self, other: T) -> f32 {
+    fn get_distance<T: Located>(&self, other: &T) -> f32 {
         let mob_pos = self.pos.clone();
         let other_pos = other.get_pos();
         mob_pos.dist(&other_pos)
