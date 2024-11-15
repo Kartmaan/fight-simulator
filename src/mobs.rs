@@ -1,11 +1,10 @@
-//! Module defining the Mob structure and all its implementations
-//! as well as the BESTIARY
+//! Module defining the Mob structure and all its 
+//! implementations as well as the BESTIARY
 
-use lazy_static::lazy_static;
+//use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 use crate::utils::spatial::Pos;
-use crate::utils::math::{normalize, exp_decay};
 use crate::utils::traits::{Mortal, Located};
 use crate::player::Player;
 
@@ -26,7 +25,7 @@ lazy_static::lazy_static! {
         map.insert("dragon", Mob {
             category: MoveCategory::Aerian,
             pos: Pos::default(),
-            speed: normalize(15.0).unwrap(),
+            speed: 0.25,
             hp: 230,
             armor: 0.0,
             precision: 0.95,
@@ -44,7 +43,7 @@ lazy_static::lazy_static! {
         map.insert("gobelin", Mob {
             category: MoveCategory::Terrestrial,
             pos: Pos::default(),
-            speed: normalize(9.0).unwrap(),
+            speed: 0.25,
             hp: 100,
             armor: 100.0,
             precision: 0.95,
@@ -62,7 +61,7 @@ lazy_static::lazy_static! {
         map.insert("shark", Mob {
             category: MoveCategory::Aquatic,
             pos: Pos::default(),
-            speed: normalize(9.0).unwrap(),
+            speed: 0.25,
             hp: 70,
             armor: 0.0,
             precision: 0.85,
@@ -104,7 +103,7 @@ impl Mob {
         Mob {
             category: cat,
             pos: pos,
-            speed: normalize(speed).unwrap(),
+            speed: 0.25,
             hp: 100,
             armor: 40.0,
             precision: 0.9,

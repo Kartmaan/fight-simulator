@@ -14,22 +14,23 @@ pub mod math {
     /// retained. It returns the number rounded to the 
     /// nearest decimal place.
     /// 
-    /// **Algorithm**
+    /// # Algorithm
     /// 1. Multiply the number by 10 to the power of the 
     /// number of decimal places to be retained.
     /// 2. Round the result to the nearest integer.
     /// 3. Divide the result by 10 raised to the power of the 
     /// number of decimal places to be retained.
     /// 
-    /// **Args**
+    /// # Args
     /// * `f_num`: The floating-point number to be rounded.
     /// * `frac_len`: The number of decimal places to retain.
     /// 
-    /// **Return**
+    /// # Return
     /// The number `f_num` rounded to `frac_len` decimal places.
+    /// (f32)
     /// 
-    /// **Example**
-    /// ```rust
+    /// # Example
+    /// ```
     /// let x: f32 = 3.141592;
     /// let y: f32 = round(x, 2); // y = 3.14
     /// ```
@@ -40,24 +41,20 @@ pub mod math {
 
     /// Tests a probability based on a normalized value : 
     /// if the probability is realized then the function 
-    /// returns `true`, otherwise `false`.
+    /// returns `Ok(true)`, otherwise `Ok(false)`.
     /// 
     /// # Args
-    /// 
     /// * `proba` : The probability between 0 and 1 (f32)
     /// 
     /// # Returns
-    /// 
     /// * `Ok(true)` : The probability has been realized
     /// * `Ok(false)` : The probability was not realized
     /// * `Err(String)` : An error has been encountered
     /// 
     /// # Error
-    /// 
     /// Inserting a negative value generates a `panic!`
     /// 
     /// # Example
-    /// 
     /// The function acts like a dice roll. For example, 
     /// if we want an event to occur only once out of 
     /// three:
@@ -99,14 +96,12 @@ pub mod math {
     /// value based on a given factor.
     /// 
     /// # Arguments
-    /// 
     /// * `init_value` - The initial value to reduce (f32).
     /// * `factor` - The decline factor that influences 
     /// the intensity of the reduction (f32).
     /// * `k` - Parameter controlling the decay rate.
     /// 
     /// # Returns
-    /// 
     /// * The reduced value after applying the exponential 
     /// reduction (f32).
     /// 
@@ -175,21 +170,21 @@ pub mod math {
     }
 
     /// Generates a random value centered around a given 
-    /// value
+    /// value.
     /// 
     /// The range limits are plus and minus 1/`fraction` 
     /// of the central value.
     /// 
-    /// **Args**
+    /// # Args
     /// * 'central_value' : The value around which to 
     /// center the random number
     /// * 'fraction' : Fraction of 'central_value' which 
     /// will be the half range around it (see exemple).
     /// 
-    /// **Return**
+    /// # Return
     /// An integer random number between the range
     /// 
-    /// **Example**
+    /// # Example
     /// * `central_value` = 10
     /// * `fraction` = 2 \
     /// The width of the range centered on `central_value`
@@ -250,23 +245,21 @@ pub mod spatial {
 
 /// Functions defining some game mechanics
 pub mod game_mechanics {
-    use rand::Rng;
-
     use super::traits::Mortal;
-    use super::math::{round, check_proba, exp_decay, centred_rand};
+    use super::math::{check_proba, exp_decay, centred_rand};
 
-    /// Returns the effective damage of a `Mortal`
+    /// Returns the effective damage of a `Mortal`.
     /// 
     /// The final damage can vary depending on several 
     /// parameters such as the `precision`, `damage` and 
     /// `damage_variation` value of `attacker`.
     /// 
-    /// **Args**
+    /// # Args
     /// * `attacker`: Bearer of the `Mortal` trait. can 
     /// be a `Mob` or a `Player` 
     /// 
-    /// **Return**
-    /// * `f32`: The final damage of `attacker`.
+    /// # Return
+    /// * The final damage of `attacker` (`f32`).
     pub fn attack<T: Mortal>(attacker: &T) -> f32 {
         // The accuracy test is passed : the blow is delivered
         if check_proba(attacker.get_precision()).unwrap() {
@@ -287,7 +280,7 @@ pub mod game_mechanics {
 
         // Missed hit
         } else {
-            let base_dam= 0.0;
+            let base_dam: f32= 0.0;
             base_dam
         }
     }
@@ -298,7 +291,7 @@ pub mod game_mechanics {
     /// modified according to several parameters such as 
     /// `defender`s armor and `dodge_proba` value.
     /// 
-    /// **Args**
+    /// # Args
     /// * `defender` : The one who receives the damage. 
     /// Can be a `Mob` or a `Player`.
     /// * `damage` : The amount of damage received.
@@ -348,7 +341,6 @@ pub mod game_mechanics {
                     defender.kill();
                 }
             }
-        //println!("Armor: {} | HP: {} ", round(defender.get_armor(), 3), defender.get_hp());
         // Dodge
         } else {
             println!("DODGE !");
@@ -356,6 +348,9 @@ pub mod game_mechanics {
     }
 
     /// Let them fight : Fight between two `Mortal`s
+    /// 
+    /// Two `Mortal` trait holders exchange blows until 
+    /// one of them has no HP left.
     pub fn battle<T: Mortal, U: Mortal>(fighter_1: &mut T, fighter_2: &mut U) {
         let mut damage: f32;
 
@@ -366,13 +361,16 @@ pub mod game_mechanics {
             // figher_1 attacks fighter_2
             damage = attack(fighter_1);
             defense(fighter_2, damage);
-            println!("Fighter 2 -> Armor : {} | HP : {}", fighter_2.get_armor(), fighter_2.get_hp());
+            println!("Fighter 2 -> Armor : {} | HP : {}", fighter_2.get_armor(), 
+            fighter_2.get_hp());
 
             // fighter_2 still alive and counter attacking
             if fighter_2.get_hp() > 0 {
                 damage = attack(fighter_2);
                 defense(fighter_1, damage);
-                println!("Fighter 1 -> Armor : {} | HP : {}", fighter_1.get_armor(), fighter_1.get_hp());
+                println!("Fighter 1 -> Armor : {} | HP : {}", fighter_1.get_armor(), 
+                fighter_1.get_hp());
+
             // fighter_2 dies -> figher_1 wins
             } else {
                 println!("Fighter_1 wins");
@@ -393,6 +391,7 @@ pub mod game_mechanics {
     }
 }
 
+/// Module containing all the traits useful for this project
 pub mod traits {
     use super::spatial::Pos;
     /// Anything that can attack, defend and die.

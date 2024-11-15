@@ -2,9 +2,7 @@
 //! implementations
 
 use crate::utils::spatial::Pos;
-use crate::utils::math::{normalize, exp_decay};
 use crate::utils::traits::{Mortal, Located};
-//use crate::mobs::Mob;
 
 /// The different classes that can be chosen by the player. 
 /// They can bring penalties or bonuses to their characteristics.
