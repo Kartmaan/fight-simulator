@@ -43,7 +43,7 @@ impl Player {
                     class: class,
                     pos: pos,
                     speed: 0.25,
-                    hp: 200,
+                    hp: 100,
                     armor: 100.0,
                     precision: 0.9,
                     damage: 45.0,

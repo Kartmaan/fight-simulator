@@ -267,7 +267,7 @@ pub mod game_mechanics {
     /// 
     /// **Return**
     /// * `f32`: The final damage of `attacker`.
-    pub fn attack<T: Mortal + ?Sized>(attacker: &T) -> f32 {
+    pub fn attack<T: Mortal>(attacker: &T) -> f32 {
         // The accuracy test is passed : the blow is delivered
         if check_proba(attacker.get_precision()).unwrap() {
             let base_dam: f32 =  centred_rand(
@@ -302,7 +302,7 @@ pub mod game_mechanics {
     /// * `defender` : The one who receives the damage. 
     /// Can be a `Mob` or a `Player`.
     /// * `damage` : The amount of damage received.
-    pub fn defense<T: Mortal + ?Sized>(defender: &mut T, damage: f32) {
+    pub fn defense<T: Mortal>(defender: &mut T, damage: f32) {
         // No dodging - Right in the face
         if !check_proba(defender.get_dodge_proba()).unwrap() {
             // Armor is present
@@ -333,14 +333,22 @@ pub mod game_mechanics {
             } else {
                 // Still alive
                 if defender.get_hp() > 0 {
-                    defender.set_hp(defender.get_hp() - damage as i32);
+                    // HP points can take the damage
+                    if damage < defender.get_hp() as f32 {
+                        defender.set_hp(defender.get_hp() - damage as i32);
+                    
+                    // HP points can't absorb the damage
+                    } else {
+                        defender.kill();
+                    }
+                    
                 
-                // Already dead...
+                // Already dead, but just in case...
                 } else {
-                    defender.set_hp(0);
+                    defender.kill();
                 }
             }
-        println!("Armor: {} | HP: {} ", round(defender.get_armor(), 3), defender.get_hp());
+        //println!("Armor: {} | HP: {} ", round(defender.get_armor(), 3), defender.get_hp());
         // Dodge
         } else {
             println!("DODGE !");
@@ -351,6 +359,9 @@ pub mod game_mechanics {
     pub fn battle<T: Mortal, U: Mortal>(fighter_1: &mut T, fighter_2: &mut U) {
         let mut damage: f32;
 
+        // It's a bit creepy to say, but the only way out 
+        // of this loop is for one of the two fighters 
+        // to die.
         loop {
             // figher_1 attacks fighter_2
             damage = attack(fighter_1);
@@ -367,6 +378,8 @@ pub mod game_mechanics {
                 println!("Fighter_1 wins");
                 break;
             }
+
+            println!("________________");
 
             // fighter_1 resisted the blow
             if fighter_1.get_hp() > 0 {

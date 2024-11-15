@@ -11,22 +11,27 @@ use utils::traits::{Located, Mortal};
 
 fn main() {
     let mut gobelin: Mob = get_mob("gobelin").unwrap();
-    let mut dragon: Mob = get_mob("dragon").unwrap();
-    let mut shark: Mob = get_mob("shark").unwrap();
-    shark.set_pos(Pos::new(170, 45));
+    //let mut dragon: Mob = get_mob("dragon").unwrap();
+    //let mut shark: Mob = get_mob("shark").unwrap();
+    //shark.set_pos(Pos::new(170, 45));
 
     let mut player = Player::new(
         "Lost".to_string(), 
         PlayerClass::Warrior, 
         Pos::new(50, 50));
     
+    let mut player_2 = Player::new(
+        "Garry".to_string(), 
+        PlayerClass::Warrior, 
+        Pos::new(150, 70));
+    
     //let dist = player.get_distance(&shark);
     //println!("{}", dist);
 
-    battle(&mut player, &mut gobelin);
+    battle(&mut player, &mut player_2);
 
     player.info();
-    gobelin.info();
+    player_2.info();
     /* for _ in 1..40 {
         print!("{}|", round(attack(&shark), 2));
     }
