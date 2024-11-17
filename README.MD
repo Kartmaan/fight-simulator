@@ -17,6 +17,7 @@ This project was carried out as part of a **personal training** in Rust. The mai
 * Simulation of a turn-based fight between the player and a mob or between two players or two mobs.
 * Calculation of damage based on the attributes of the player and the mob like armor value, HP, critical damage probability, etc.
 * Stylized display of information each round until one of the fighters wins
+* A Jupyter notebook to simulate different attack and defense configurations and judge performance graphically.
 
 ## Screenshots
 Fight between a Warrior (Lost) and an Archer (Duriel) :
