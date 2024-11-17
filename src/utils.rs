@@ -355,6 +355,7 @@ pub mod game_mechanics {
     /// one of them has no HP left.
     pub fn battle<T: Mortal, U: Mortal>(fighter_1: &mut T, fighter_2: &mut U) {
         let mut damage: f32;
+        let mut hits: u32 = 0;
 
         // It's a bit creepy to say, but the only way out 
         // of this loop is for one of the two fighters 
@@ -373,6 +374,8 @@ pub mod game_mechanics {
             fighter_2.get_armor(), 
             fighter_2.get_hp());
 
+            hits += 1;
+
             println!("________________");
 
             // fighter_2 still alive and counter attacking
@@ -389,10 +392,16 @@ pub mod game_mechanics {
                 fighter_1.get_armor(), 
                 fighter_1.get_hp());
 
+                hits += 1;
+
             // fighter_2 dies -> figher_1 wins
             } else {
                 cprintln!("<green>- - - - - - - - - -</green>");
-                cprintln!("<green>{} WINS !</green>", fighter_1.get_name());
+                cprintln!("<green>| {} WINS !</green>", fighter_1.get_name());
+                cprintln!("<green>| AFTER {} HITS</green>", hits);
+                cprintln!("<green>| Armor: {} HP: {}</green>", 
+                round(fighter_1.get_armor(), 2), 
+                fighter_1.get_hp());
                 cprintln!("<green>- - - - - - - - - -</green>");
                 break;
             }
@@ -405,7 +414,11 @@ pub mod game_mechanics {
             // fighter_1 dies -> figher_2 wins
             } else {
                 cprintln!("<green>- - - - - - - - - -</green>");
-                cprintln!("<green>{} WINS !</green>", fighter_2.get_name());
+                cprintln!("<green>| {} WINS !</green>", fighter_2.get_name());
+                cprintln!("<green>| AFTER {} HITS</green>", hits);
+                cprintln!("<green>| Armor: {} HP: {}</green>", 
+                round(fighter_2.get_armor(), 2), 
+                fighter_2.get_hp());
                 cprintln!("<green>- - - - - - - - - -</green>");
                 break;
             }
