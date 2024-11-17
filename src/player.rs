@@ -6,9 +6,17 @@ use crate::utils::traits::{Mortal, Located};
 
 /// The different classes that can be chosen by the player. 
 /// They can bring penalties or bonuses to their characteristics.
-#[derive(Debug)]
+#[derive(Debug, Default)]
 pub enum PlayerClass {
+    /// Class whose damage is often impactful and has a 
+    /// higher probability of dodging hits. However its 
+    /// accuracy is lower and has less armor.
     Archer,
+
+    /// Class that almost always hits its target and has 
+    /// a high armor value. However, its dodge probability 
+    /// is lower and its base damage oscillations higher.
+    #[default]
     Warrior,
 }
 
@@ -20,6 +28,7 @@ pub struct Player {
     speed: f32,
     hp: i32,
     armor: f32, // Armor value [0, 100]
+    armor_decay_rate: f32, // See exp_decay
     precision: f32, // Chance of hitting the target
     damage: f32, // Base damage
     damage_variation: f32, // damage fraction
@@ -43,6 +52,7 @@ impl Player {
                     speed: 0.25,
                     hp: 100,
                     armor: 100.0,
+                    armor_decay_rate: 0.04,
                     precision: 0.9,
                     damage: 45.0,
                     damage_variation: 8.0,
@@ -62,11 +72,12 @@ impl Player {
                     pos: pos,
                     speed: 0.4,
                     hp: 100,
-                    armor: 60.0,
+                    armor: 80.0,
+                    armor_decay_rate: 0.05,
                     precision: 0.75,
-                    damage: 50.0,
-                    damage_variation: 8.0,
-                    crit_proba: 0.05,
+                    damage: 55.0,
+                    damage_variation: 4.0,
+                    crit_proba: 0.15,
                     crit_multiplier: 2.5,
                     dodge_proba: 0.15,
                     in_alert: false,
@@ -91,12 +102,20 @@ impl Player {
 
 impl Mortal for Player {
     // ------ GETS ------
+    fn get_name(&self) -> String {
+        self.name.clone()
+    }
+
     fn get_hp(&self) -> i32 {
         self.hp
     }
 
     fn get_armor(&self) -> f32 {
         self.armor
+    }
+
+    fn get_armor_decay_rate(&self) -> f32 {
+        self.armor_decay_rate
     }
 
     fn get_precision(&self) -> f32 {
@@ -157,6 +176,7 @@ impl Mortal for Player {
     }
 
     // ------ Actions ------
+    /// /// Kills the Player in cold blood
     fn kill(&mut self) {
         self.armor = 0.0;
         self.hp = 0;

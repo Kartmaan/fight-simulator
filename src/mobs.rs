@@ -1,21 +1,25 @@
 //! Module defining the Mob structure and all its 
 //! implementations as well as the BESTIARY
 
-//use lazy_static::lazy_static;
 use std::collections::HashMap;
 
 use crate::utils::spatial::Pos;
 use crate::utils::traits::{Mortal, Located};
-use crate::player::Player;
 
 /// The different types of movement that a Mob can adopt
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub enum MoveCategory {
+    #[default]
     Terrestrial,
     Aerian,
     Aquatic,
 }
 
+// Bestiary containing different types of Mob.
+// We use `lazy_static` to initialize the bestiary only 
+// once, on first access, rather than every time a mob is 
+// created. This optimizes performance by avoiding 
+// recalculating mob stats each time.
 lazy_static::lazy_static! {
     /// Bestiary containing different types of Mob
     pub static ref BESTIARY: HashMap<&'static str, Mob> = {
@@ -23,11 +27,13 @@ lazy_static::lazy_static! {
 
         // DRAGON
         map.insert("dragon", Mob {
+            name: "Drago".to_string(),
             category: MoveCategory::Aerian,
             pos: Pos::default(),
             speed: 0.25,
             hp: 230,
             armor: 0.0,
+            armor_decay_rate: 0.04,
             precision: 0.95,
             damage: 40.0,
             damage_variation: 8.0,
@@ -41,11 +47,13 @@ lazy_static::lazy_static! {
 
         // GOBELIN
         map.insert("gobelin", Mob {
+            name: "Gobee".to_string(),
             category: MoveCategory::Terrestrial,
             pos: Pos::default(),
             speed: 0.25,
             hp: 100,
             armor: 100.0,
+            armor_decay_rate: 0.04,
             precision: 0.95,
             damage: 45.0,
             damage_variation: 8.0,
@@ -59,11 +67,13 @@ lazy_static::lazy_static! {
 
         // SHARK
         map.insert("shark", Mob {
+            name: "Sharky".to_string(),
             category: MoveCategory::Aquatic,
             pos: Pos::default(),
             speed: 0.25,
             hp: 70,
             armor: 0.0,
+            armor_decay_rate: 0.04,
             precision: 0.85,
             damage: 40.0,
             damage_variation: 8.0,
@@ -81,11 +91,13 @@ lazy_static::lazy_static! {
 /// Player's enemy
 #[derive(Debug, Clone)]
 pub struct Mob {
+    name: String,
     category: MoveCategory,
     pos: Pos,
     speed: f32,
     hp: i32,
     armor: f32, // Armor value [0, 100]
+    armor_decay_rate: f32,
     precision: f32, // Chance of hitting the target
     damage: f32, // Base damage
     damage_variation: f32,
@@ -98,42 +110,15 @@ pub struct Mob {
 }
 
 impl Mob {
-    /// Create a new Mob
-    pub fn new(cat: MoveCategory, speed: f32, pos: Pos) -> Mob {
-        Mob {
-            category: cat,
-            pos: pos,
-            speed: 0.25,
-            hp: 100,
-            armor: 40.0,
-            precision: 0.9,
-            damage: 33.0,
-            damage_variation: 8.0,
-            crit_proba: 0.05,
-            crit_multiplier: 1.5,
-            dodge_proba: 0.03,
-            in_alert: false,
-            is_attacking: false,
-            is_alive: true,
-        }
-    }
-
     /// Prints some infos about the Mob
     pub fn info(&self) {
-        println!("\nCategory : {:?}", self.category);
+        println!("\n Name : {}", self.name);
+        println!("Category : {:?}", self.category);
         println!("Speed : {}", self.speed);
         println!("Pos x,y : ({},{})", self.pos.x, self.pos.y);
         println!("Armor : {}", self.armor);
         println!("HP : {}", self.hp);
         println!("Alive : {}", self.is_alive);
-    }
-
-    /// Euclidian distance between a Mob and the player
-    pub fn dist(&self, player_pos:&Player) -> f32 {
-        let mob_pos = &self.pos;
-        let player_position = &player_pos.pos;
-        let distance = mob_pos.dist(player_position);
-        return distance;
     }
 
     /// Kills a Mob in cold blood
@@ -147,12 +132,20 @@ impl Mob {
 
 impl Mortal for Mob {
     // ------ GETS ------
+    fn get_name(&self) -> String {
+        self.name.clone()
+    }
+    
     fn get_hp(&self) -> i32 {
         self.hp
     }
 
     fn get_armor(&self) -> f32 {
         self.armor
+    }
+
+    fn get_armor_decay_rate(&self) -> f32 {
+        self.armor_decay_rate
     }
 
     fn get_precision(&self) -> f32 {
@@ -238,7 +231,18 @@ impl Located for Mob {
     }
 }
 
-/// Returns Ok(Mob) if the Mob name is available in BESTIARY
+/// Returns the requested Mob if it's present in the 
+/// bestiary.
+/// 
+/// # Args
+/// * `mob_name` : Requested Mob name (&str)
+/// 
+/// # Error
+/// The function generates a `panic!` if the Mob name 
+/// isn't present in the bestiary
+/// 
+/// # Return
+/// The requested Mob (Mob struct)
 pub fn get_mob(mob_name: &str) -> Result<Mob, String> {
     if BESTIARY.contains_key(mob_name) {
         let mut mob: Mob = BESTIARY.get(mob_name).cloned().unwrap();

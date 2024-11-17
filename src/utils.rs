@@ -210,7 +210,7 @@ pub mod math {
 /// 2D space
 pub mod spatial {
     /// 2D coordinates structure
-    #[derive(Debug, Clone)]
+    #[derive(Debug, Clone, Default)]
     pub struct Pos {
         pub x: i32,
         pub y: i32,
@@ -220,11 +220,6 @@ pub mod spatial {
         /// Create a new Pos struct
         pub fn new(x: i32, y:i32) -> Pos {
             Pos {x:x, y:y}
-        }
-    
-        /// Initializes default coordinates
-        pub fn default() -> Pos {
-            Pos {x:0, y:0}
         }
     
         /// Change the coordinates of a Pos struct
@@ -245,6 +240,8 @@ pub mod spatial {
 
 /// Functions defining some game mechanics
 pub mod game_mechanics {
+    use color_print::cprintln;
+
     use super::traits::Mortal;
     use super::math::{check_proba, exp_decay, centred_rand};
 
@@ -270,6 +267,7 @@ pub mod game_mechanics {
 
             // Crit realized
             if check_proba(attacker.get_crit_proba()).unwrap() {
+                cprintln!("<red>CRIT by {} !</red>", attacker.get_name());
                 base_dam = base_dam * attacker.get_crit_multiplier();
                 base_dam
 
@@ -280,6 +278,7 @@ pub mod game_mechanics {
 
         // Missed hit
         } else {
+            cprintln!("<yellow>MISSED by {} !</yellow>", attacker.get_name());
             let base_dam: f32= 0.0;
             base_dam
         }
@@ -302,7 +301,7 @@ pub mod game_mechanics {
             if defender.get_armor() > 0.0 {
                 let dam: f32 = damage;
                 let armor: f32 = defender.get_armor();
-                let k: f32 = 0.04;
+                let k: f32 = defender.get_armor_decay_rate();
 
                 let final_dam: f32 = exp_decay(
                     dam, 
@@ -343,7 +342,7 @@ pub mod game_mechanics {
             }
         // Dodge
         } else {
-            println!("DODGE !");
+            cprintln!("<green>DODGED by {} !</green>", defender.get_name());
         }
     }
 
@@ -360,20 +359,36 @@ pub mod game_mechanics {
         loop {
             // figher_1 attacks fighter_2
             damage = attack(fighter_1);
+
+            println!("{} attacks {} : {} dam", 
+            fighter_1.get_name(), fighter_2.get_name(),
+            &damage);
+
             defense(fighter_2, damage);
-            println!("Fighter 2 -> Armor : {} | HP : {}", fighter_2.get_armor(), 
+            println!("{} -> Armor : {} | HP : {}",
+            fighter_2.get_name(), 
+            fighter_2.get_armor(), 
             fighter_2.get_hp());
+
+            println!("________________");
 
             // fighter_2 still alive and counter attacking
             if fighter_2.get_hp() > 0 {
                 damage = attack(fighter_2);
+
+                println!("{} attacks {} : {} dam", 
+                fighter_2.get_name(), fighter_1.get_name(),
+                &damage);
+
                 defense(fighter_1, damage);
-                println!("Fighter 1 -> Armor : {} | HP : {}", fighter_1.get_armor(), 
+                println!("{} -> Armor : {} | HP : {}",
+                fighter_1.get_name(),
+                fighter_1.get_armor(), 
                 fighter_1.get_hp());
 
             // fighter_2 dies -> figher_1 wins
             } else {
-                println!("Fighter_1 wins");
+                println!("{} wins", fighter_1.get_name());
                 break;
             }
 
@@ -384,7 +399,7 @@ pub mod game_mechanics {
                 continue;
             // fighter_1 dies -> figher_2 wins
             } else {
-                println!("Fighter_2 wins");
+                println!("{} wins", fighter_2.get_name());
                 break;
             }
         }
@@ -397,8 +412,10 @@ pub mod traits {
     /// Anything that can attack, defend and die.
     pub trait Mortal {
         // ----- Gets -----
+        fn get_name(&self) -> String;
         fn get_hp(&self) -> i32;
         fn get_armor(&self) -> f32;
+        fn get_armor_decay_rate(&self) -> f32;
         fn get_precision(&self) -> f32;
         fn get_damage(&self) -> f32;
         fn get_damage_variation(&self) -> f32;
