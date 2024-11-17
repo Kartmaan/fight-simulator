@@ -127,8 +127,9 @@ pub mod math {
     /// `exp()` from the Rust standard library whose 
     /// precision is not deterministic*.
     pub fn exp_decay(input_value: f32, factor: f32, k: f32) -> f32 {
+        let float_precision: u32 = 2;
         let final_dam: f32 = input_value * (-k * factor).exp();
-        return  final_dam;
+        return round(final_dam, float_precision);
     }
 
     /// Normalizes a value to be between 0 and 1.
@@ -243,7 +244,7 @@ pub mod game_mechanics {
     use color_print::cprintln;
 
     use super::traits::Mortal;
-    use super::math::{check_proba, exp_decay, centred_rand};
+    use super::math::{check_proba, exp_decay, centred_rand, round};
 
     /// Returns the effective damage of a `Mortal`.
     /// 
@@ -258,6 +259,8 @@ pub mod game_mechanics {
     /// # Return
     /// * The final damage of `attacker` (`f32`).
     pub fn attack<T: Mortal>(attacker: &T) -> f32 {
+        let float_precision: u32 = 2;
+
         // The accuracy test is passed : the blow is delivered
         if check_proba(attacker.get_precision()).unwrap() {
             let base_dam: f32 =  centred_rand(
@@ -269,11 +272,11 @@ pub mod game_mechanics {
             if check_proba(attacker.get_crit_proba()).unwrap() {
                 cprintln!("<red>CRIT by {} !</red>", attacker.get_name());
                 base_dam = base_dam * attacker.get_crit_multiplier();
-                base_dam
+                round(base_dam, float_precision)
 
             // No crit
             } else {
-                base_dam
+                round(base_dam, float_precision)
             }
 
         // Missed hit
@@ -388,7 +391,9 @@ pub mod game_mechanics {
 
             // fighter_2 dies -> figher_1 wins
             } else {
-                println!("{} wins", fighter_1.get_name());
+                cprintln!("<green>- - - - - - - - - -</green>");
+                cprintln!("<green>{} WINS !</green>", fighter_1.get_name());
+                cprintln!("<green>- - - - - - - - - -</green>");
                 break;
             }
 
@@ -399,7 +404,9 @@ pub mod game_mechanics {
                 continue;
             // fighter_1 dies -> figher_2 wins
             } else {
-                println!("{} wins", fighter_2.get_name());
+                cprintln!("<green>- - - - - - - - - -</green>");
+                cprintln!("<green>{} WINS !</green>", fighter_2.get_name());
+                cprintln!("<green>- - - - - - - - - -</green>");
                 break;
             }
         }
