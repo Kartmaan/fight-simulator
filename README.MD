@@ -19,3 +19,4 @@ This project was carried out as part of a **personal training** in Rust. The mai
 * Stylized display of information each round until one of the fighters wins
 
 ## Screenshots
+![cap](https://github.com/user-attachments/assets/522201b3-faac-434b-9940-9ce91c03ab4b)
