@@ -20,4 +20,5 @@ This project was carried out as part of a **personal training** in Rust. The mai
 
 ## Screenshots
 Fight between a Warrior (Lost) and an Archer (Duriel) :
+
 ![cap](https://github.com/user-attachments/assets/522201b3-faac-434b-9940-9ce91c03ab4b)
